@@ -1925,6 +1925,8 @@
     v.textContent = value;
     document.getElementById('benefit-control').classList.add('has-value');
     closeDropdown('benefit');
+    // Show the rule editor as soon as a benefit is picked
+    if (rules.length === 0) addBlankRule();
   }
 
 
