@@ -1552,28 +1552,6 @@
     </div>
   </div>
 
-  <!-- Card 0: Validator Name -->
-  <div class="form-card">
-    <div class="form-section">
-      <div class="form-block">
-        <div class="form-block-title">Validator Name</div>
-        <div class="form-block-desc">Give this validator a unique name so it's easy to identify later.</div>
-      </div>
-      <div class="form-right">
-        <div class="select-wrap">
-          <div class="select-label">Validator Name <span class="asterisk">✱</span></div>
-          <input
-            type="text"
-            id="validator-name-input"
-            class="text-input"
-            placeholder="e.g. Student Loan — Full Time Employees"
-            oninput="validatorName = this.value"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Card 1: Benefit / Product — two-column layout -->
   <div class="form-card">
     <div class="form-section">
@@ -1597,6 +1575,28 @@
             <div class="dropdown-divider"></div>
             <div class="dropdown-item" onclick="selectBenefit('Other Benefit')">Other Benefit</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Validator Name -->
+  <div class="form-card" id="validator-name-card" style="display:none;">
+    <div class="form-section">
+      <div class="form-block">
+        <div class="form-block-title">Validator Name</div>
+        <div class="form-block-desc">Give this validator a unique name so it's easy to identify later.</div>
+      </div>
+      <div class="form-right">
+        <div class="select-wrap">
+          <div class="select-label">Validator Name <span class="asterisk">✱</span></div>
+          <input
+            type="text"
+            id="validator-name-input"
+            class="text-input"
+            placeholder="e.g. Student Loan — Full Time Employees"
+            oninput="validatorName = this.value"
+          />
         </div>
       </div>
     </div>
@@ -2026,7 +2026,8 @@
     v.textContent = value;
     document.getElementById('benefit-control').classList.add('has-value');
     closeDropdown('benefit');
-    // Reveal the Eligibility Variables card and seed the first rule
+    // Reveal the Validator Name card, then Eligibility Variables card
+    document.getElementById('validator-name-card').style.display = 'flex';
     document.getElementById('eligibility-card').style.display = 'flex';
     if (rules.length === 0) addBlankRule();
   }
