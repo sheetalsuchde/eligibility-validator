@@ -1478,8 +1478,8 @@
     </div>
   </div>
 
-  <!-- Card 2: Eligibility Variables — rule editor -->
-  <div class="form-card" style="gap:32px;">
+  <!-- Card 2: Eligibility Variables — rule editor (hidden until benefit selected) -->
+  <div class="form-card" id="eligibility-card" style="gap:32px; display:none;">
     <div class="form-block">
       <div class="form-block-title">Eligibility Variables</div>
       <div class="form-block-desc">Define conditions and repayment amounts for this benefit.</div>
@@ -1916,7 +1916,8 @@
     v.textContent = value;
     document.getElementById('benefit-control').classList.add('has-value');
     closeDropdown('benefit');
-    // Show the rule editor as soon as a benefit is picked
+    // Reveal the Eligibility Variables card and seed the first rule
+    document.getElementById('eligibility-card').style.display = 'flex';
     if (rules.length === 0) addBlankRule();
   }
 
