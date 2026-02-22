@@ -600,6 +600,56 @@
     }
 
     /* ───── DRY RUN SCREEN ───── */
+    /* ── Review & Run a Test ── */
+    .review-container {
+      background: var(--surface-base);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .review-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 32px;
+    }
+    .review-name-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 4px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 32px;
+    }
+    .review-rule-card {
+      background: var(--brand-blue-light);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .review-rule-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .review-rule-text {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
     .dry-run-info {
       background: var(--surface-overlay);
       border: 1px solid var(--border-base);
@@ -1639,57 +1689,32 @@
     </div>
   </div>
 
-  <!-- Dry Run Info -->
-  <div class="dry-run-info">
-    <h2>Dry Run Results</h2>
-    <p>Review the results of your eligibility simulation before activating. Download the report to inspect individual records.</p>
-
-    <div class="dry-run-grid">
-      <div class="dry-run-card">
-        <div class="dry-run-badge success">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" fill="#027A42"/><path d="M3.5 6L5 7.5L8.5 4" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
-          Eligible
-        </div>
-        <div class="dry-run-card-label">Employees Eligible</div>
-        <div class="dry-run-card-value">1,284</div>
-        <div class="dry-run-card-sub">94.3% of total workforce</div>
-      </div>
-      <div class="dry-run-card warning">
-        <div class="dry-run-badge warning">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L11 10H1L6 1Z" fill="#C27400"/><path d="M6 5V7" stroke="white" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.5" r="0.5" fill="white"/></svg>
-          Flagged
-        </div>
-        <div class="dry-run-card-label">Flagged Records</div>
-        <div class="dry-run-card-value">78</div>
-        <div class="dry-run-card-sub">5.7% require review</div>
-      </div>
-      <div class="dry-run-card">
-        <div class="dry-run-card-label">Total Records Processed</div>
-        <div class="dry-run-card-value">1,362</div>
-        <div class="dry-run-card-sub">Processed <span style="color:var(--text-secondary)">Feb 22, 2026 · 10:14 AM</span></div>
-      </div>
-      <div class="dry-run-card">
-        <div class="dry-run-card-label">Rules Applied</div>
-        <div class="dry-run-card-value">3</div>
-        <div class="dry-run-card-sub" id="dry-run-vars-summary">Employment Type · Hire date · …</div>
-      </div>
+  <!-- Review & Run a Test -->
+  <div class="form-card" style="gap:24px;">
+    <!-- Section heading -->
+    <div>
+      <div class="form-block-title" style="font-size:20px;">Review &amp; run a test</div>
+      <div class="form-block-desc" style="margin-top:4px;">Your rules are configured and saved. Review the summary and test them now to confirm the outcomes align with your expectations.</div>
     </div>
 
-    <button class="download-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Download Full Report (.xlsx)
-    </button>
-  </div>
+    <!-- Validator name + rule summaries container -->
+    <div class="review-container">
+      <!-- Validator name badge -->
+      <div class="review-name-row">
+        <div class="review-name-badge" id="review-validator-name">—</div>
+      </div>
 
-  <div class="alert alert-info" style="margin-top:16px">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Review flagged records in the report. You can edit your eligibility rules and re-run if needed before activating the validator.
+      <!-- Rule summary cards -->
+      <div id="review-rules-list"></div>
+    </div>
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-ghost" onclick="navigate('screen-step1')">Back</button>
-    <button class="btn btn-outline" onclick="runDryRun()">Re-run Dry Run</button>
-    <button class="btn btn-primary" onclick="navigate('screen-step3')">Next</button>
+    <button class="btn btn-outline" onclick="navigate('screen-step1')">Back</button>
+    <button class="btn btn-primary" onclick="startDryRun()">
+      Dry Run
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+    </button>
   </div>
 </div>
 
@@ -2352,18 +2377,37 @@
      STEP 2: DRY RUN
   ══════════════════════════════════════════════════ */
   function goToStep2() {
-    if (rules.length > 0) {
-      document.getElementById('dry-run-rule-count').textContent = rules.length;
+    // Populate validator name badge
+    const nameEl = document.getElementById('review-validator-name');
+    if (nameEl) nameEl.textContent = validatorName.trim() || 'Unnamed Validator';
+
+    // Populate rule summary cards
+    const listEl = document.getElementById('review-rules-list');
+    if (listEl) {
+      listEl.innerHTML = rules.map((rule, idx) => {
+        const summary = buildRuleSummary(rule);
+        return `
+          <div class="review-rule-card">
+            <div class="review-rule-label">Rule ${idx + 1} Summary</div>
+            <div class="review-rule-text">${summary}</div>
+          </div>`;
+      }).join('');
     }
+
     navigate('screen-step2');
   }
 
-  function runDryRun() {
-    const btn = event.target;
-    const original = btn.textContent;
-    btn.textContent = 'Running…';
+  function startDryRun() {
+    const btn = event.currentTarget;
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = 'Running…';
     btn.disabled = true;
-    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1800);
+    setTimeout(() => {
+      btn.innerHTML = origHTML;
+      btn.disabled = false;
+      navigate('screen-step3');
+      showConfirmation();
+    }, 1800);
   }
 
   /* ══════════════════════════════════════════════════
