@@ -949,6 +949,7 @@
       transform: translateY(-50%);
       pointer-events: none;
       color: var(--text-secondary);
+      z-index: 1;
     }
     .rule-select-label {
       position: absolute;
@@ -1856,7 +1857,7 @@
 
       // Rule summary text
       const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
-      const amtLabel  = state.amountValue || '$200';
+      const amtLabel  = state.amountValue || '$0';
       const summaryText = buildSummary(varName, condLabel, amtLabel);
 
       const card = document.createElement('div');
@@ -1975,7 +1976,7 @@
     const summaryEl = document.getElementById(`rule-summary-${ruleNum}`);
     if (!summaryEl) return;
     const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
-    const amtLabel  = state.amountValue || '$200';
+    const amtLabel  = state.amountValue || '$0';
     summaryEl.querySelector('.rule-summary-text').textContent =
       buildSummary(varName, condLabel, amtLabel);
   }
