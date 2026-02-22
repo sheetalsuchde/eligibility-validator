@@ -2494,13 +2494,13 @@
   let nextCondId = 1; // separate id counter for conditions
 
   function blankCondition(varName) {
-    return { cid: nextCondId++, varName: varName || ALL_VARIABLE_NAMES[0], conditionValue: '', operator: '', number: '', duration: '' };
+    return { cid: nextCondId++, varName: varName || '', conditionValue: '', operator: '', number: '', duration: '' };
   }
 
   function blankRule(varName) {
     return {
       id: nextRuleId++,
-      conditions: [ blankCondition(varName || ALL_VARIABLE_NAMES[0]) ],
+      conditions: [ blankCondition(varName || '') ],
       connector: 'AND',
       amountValue: '',
       collapsed: false
@@ -2699,8 +2699,9 @@
           <div class="condition-block-inner">
             <div class="condition-fields-row">
               <div class="rule-select-wrap">
-                <span class="rule-select-label">Variable</span>
+                <span class="rule-select-label">Eligibility Variable</span>
                 <select class="rule-select" onchange="updateConditionVar(${ruleId},${cond.cid},this.value)">
+                  <option value="" disabled ${!cond.varName ? 'selected' : ''}>Select Eligibility Variable</option>
                   ${varOpts}
                 </select>
                 <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
