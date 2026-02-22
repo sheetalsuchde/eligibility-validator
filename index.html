@@ -1716,12 +1716,13 @@
      STATE
   ══════════════════════════════════════════════════ */
   let selectedBenefit = '';
-  let selectedVars    = [];          // ordered list of selected variable names
+  let selectedVars    = [];          // tracks which checkboxes are ticked (for the tags strip)
   let benefitDropdownOpen = false;
   let varsDropdownOpen    = false;
 
-  /* Per-rule state: keyed by variable name */
-  const ruleState = {};
+  /* Independent rule list — each entry is one Rule card */
+  let rules = [];           // [{ id, varName, conditionValue, amountValue }, …]
+  let nextRuleId = 1;       // auto-increment id
 
   /* Default options per variable type */
   const VARIABLE_OPTIONS = {
@@ -1732,6 +1733,8 @@
     'Hours per week':       ['< 20 hrs', '20–30 hrs', '30–40 hrs', '> 40 hrs'],
     'Location / State':     ['CA', 'NY', 'TX', 'FL', 'All states'],
   };
+
+  const ALL_VARIABLE_NAMES = Object.keys(VARIABLE_OPTIONS);
 
 
   /* ══════════════════════════════════════════════════
@@ -1795,23 +1798,23 @@
   }
 
   /* ══════════════════════════════════════════════════
-     ELIGIBILITY VARIABLES MULTI-SELECT
+     ELIGIBILITY VARIABLES MULTI-SELECT (tag strip)
   ══════════════════════════════════════════════════ */
   function toggleVar(checkbox) {
     const val = checkbox.value;
     if (checkbox.checked) {
       if (!selectedVars.includes(val)) {
         selectedVars.push(val);
-        // initialise rule state for this variable
-        if (!ruleState[val]) {
-          ruleState[val] = { conditionValue: '', amountValue: '' };
-        }
+        // Also add a rule card for this variable automatically
+        addRuleForVar(val);
       }
     } else {
       selectedVars = selectedVars.filter(v => v !== val);
+      // Remove all rule cards that use this variable
+      rules = rules.filter(r => r.varName !== val);
+      renderRules();
     }
     renderTags();
-    renderRules();
   }
 
   function removeTag(val) {
@@ -1819,6 +1822,7 @@
     document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
       if (cb.value === val) cb.checked = false;
     });
+    rules = rules.filter(r => r.varName !== val);
     renderTags();
     renderRules();
   }
@@ -1843,30 +1847,90 @@
   }
 
   /* ══════════════════════════════════════════════════
+     RULE MANAGEMENT
+  ══════════════════════════════════════════════════ */
+  function addRuleForVar(varName) {
+    rules.push({ id: nextRuleId++, varName, conditionValue: '', amountValue: '' });
+    renderRules();
+  }
+
+  function addBlankRule() {
+    // Default to the first variable, or empty string if none selected
+    const defaultVar = selectedVars[0] || ALL_VARIABLE_NAMES[0];
+    rules.push({ id: nextRuleId++, varName: defaultVar, conditionValue: '', amountValue: '' });
+    renderRules();
+  }
+
+  function deleteRuleById(id) {
+    rules = rules.filter(r => r.id !== id);
+    renderRules();
+  }
+
+  function updateRuleVar(id, varName) {
+    const rule = rules.find(r => r.id === id);
+    if (!rule) return;
+    rule.varName = varName;
+    rule.conditionValue = '';  // reset condition when variable changes
+    renderRules();
+  }
+
+  function updateRuleCondition(id, value) {
+    const rule = rules.find(r => r.id === id);
+    if (rule) rule.conditionValue = value;
+    refreshRuleSummaryById(id);
+  }
+
+  function updateRuleAmount(id, value) {
+    const rule = rules.find(r => r.id === id);
+    if (rule) rule.amountValue = value ? '$' + value : '';
+    refreshRuleSummaryById(id);
+  }
+
+  function refreshRuleSummaryById(id) {
+    const rule = rules.find(r => r.id === id);
+    if (!rule) return;
+    const summaryEl = document.getElementById(`rule-summary-${id}`);
+    if (!summaryEl) return;
+    const condLabel = rule.conditionValue || (VARIABLE_OPTIONS[rule.varName] ? VARIABLE_OPTIONS[rule.varName][0] : '—');
+    const amtLabel  = rule.amountValue || '$0';
+    summaryEl.querySelector('.rule-summary-text').textContent =
+      buildSummary(rule.varName, condLabel, amtLabel);
+  }
+
+  function buildSummary(varName, condVal, amount) {
+    return `All ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
+  }
+
+  /* ══════════════════════════════════════════════════
      RULE CARD RENDERING
   ══════════════════════════════════════════════════ */
   function renderRules() {
     const area = document.getElementById('rules-area');
     area.innerHTML = '';
 
-    selectedVars.forEach((varName, idx) => {
-      const state = ruleState[varName] || { conditionValue: '', amountValue: '' };
+    rules.forEach((rule, idx) => {
       const ruleNum = idx + 1;
-      const safe = varName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const id = rule.id;
 
-      // Build condition options for this variable
-      const condOpts = (VARIABLE_OPTIONS[varName] || ['Option A', 'Option B', 'Option C'])
-        .map(o => `<option value="${o}" ${state.conditionValue === o ? 'selected' : ''}>${o}</option>`)
+      // Variable selector options
+      const varOpts = ALL_VARIABLE_NAMES
+        .map(v => `<option value="${v}" ${rule.varName === v ? 'selected' : ''}>${v}</option>`)
         .join('');
 
-      // Rule summary text
-      const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
-      const amtLabel  = state.amountValue || '$0';
-      const summaryText = buildSummary(varName, condLabel, amtLabel);
+      // Condition options for the current variable
+      const condOpts = (VARIABLE_OPTIONS[rule.varName] || ['Option A', 'Option B', 'Option C'])
+        .map(o => `<option value="${o}" ${rule.conditionValue === o ? 'selected' : ''}>${o}</option>`)
+        .join('');
+
+      // Summary
+      const condLabel = rule.conditionValue || (VARIABLE_OPTIONS[rule.varName] ? VARIABLE_OPTIONS[rule.varName][0] : '—');
+      const amtLabel  = rule.amountValue || '$0';
+      const summaryText = buildSummary(rule.varName, condLabel, amtLabel);
+      const amountRaw = rule.amountValue ? rule.amountValue.replace(/[^0-9.]/g, '') : '';
 
       const card = document.createElement('div');
       card.className = 'rule-card';
-      card.id = `rule-card-${ruleNum}`;
+      card.id = `rule-card-${id}`;
       card.innerHTML = `
         <!-- Rule header: badge + delete -->
         <div class="rule-header">
@@ -1876,7 +1940,7 @@
             </svg>
             Rule ${ruleNum}
           </div>
-          <button class="rule-delete-btn" onclick="deleteRule('${safe}')" title="Remove rule">
+          <button class="rule-delete-btn" onclick="deleteRuleById(${id})" title="Remove rule">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
               <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
@@ -1889,16 +1953,21 @@
 
         <!-- Condition box (white inner card) -->
         <div class="rule-condition-box">
-          <!-- Variable row: checkbox (checked, read-only) + variable name -->
-          <div class="rule-condition-variable">
-            <input type="checkbox" checked disabled />
-            <span>${varName}</span>
+          <!-- Variable selector -->
+          <div class="rule-select-wrap">
+            <span class="rule-select-label">Variable</span>
+            <select class="rule-select" onchange="updateRuleVar(${id}, this.value)">
+              ${varOpts}
+            </select>
+            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
           </div>
 
           <!-- Condition value select -->
           <div class="rule-select-wrap">
             <span class="rule-select-label">Type</span>
-            <select class="rule-select" onchange="updateRuleCondition('${safe}', this.value)">
+            <select class="rule-select" onchange="updateRuleCondition(${id}, this.value)">
               ${condOpts}
             </select>
             <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1911,7 +1980,6 @@
         <div class="rule-then-area">
           <div class="rule-then-label">THEN</div>
           <div class="rule-then-inner">
-            <!-- Single row: "Provide repayment of [amount select] [per month]" -->
             <div class="rule-then-row">
               <span>Provide repayment of</span>
               <div class="rule-amount-wrap">
@@ -1922,8 +1990,8 @@
                   class="rule-amount-input"
                   min="0"
                   placeholder="0"
-                  value="${state.amountValue ? state.amountValue.replace(/[^0-9.]/g, '') : ''}"
-                  oninput="updateRuleAmount('${safe}', this.value ? '$' + this.value : '')"
+                  value="${amountRaw}"
+                  oninput="updateRuleAmount(${id}, this.value)"
                 />
               </div>
               <span>[per month]</span>
@@ -1931,8 +1999,8 @@
           </div>
         </div>
 
-        <!-- Rule Summary (blue background) -->
-        <div class="rule-summary" id="rule-summary-${ruleNum}">
+        <!-- Rule Summary -->
+        <div class="rule-summary" id="rule-summary-${id}">
           <div class="rule-summary-label">Rule ${ruleNum} Summary</div>
           <div class="rule-summary-text">${summaryText}</div>
         </div>
@@ -1940,8 +2008,8 @@
       area.appendChild(card);
     });
 
-    // "Add another Rule" button — only shown when at least one variable is selected
-    if (selectedVars.length > 0) {
+    // "Add another Rule" button — always shown once at least one rule exists
+    if (rules.length > 0) {
       const addBtn = document.createElement('button');
       addBtn.className = 'add-rule-btn';
       addBtn.innerHTML = `
@@ -1950,55 +2018,9 @@
         </svg>
         Add another Rule
       `;
-      addBtn.onclick = openVarsDropdown;
+      addBtn.onclick = addBlankRule;
       area.appendChild(addBtn);
     }
-  }
-
-  function buildSummary(varName, condVal, amount) {
-    return `All ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
-  }
-
-  /* ─── Update handlers called from inline selects ─── */
-  function updateRuleCondition(varName, value) {
-    if (!ruleState[varName]) ruleState[varName] = { conditionValue: '', amountValue: '' };
-    ruleState[varName].conditionValue = value;
-    refreshRuleSummary(varName);
-  }
-
-  function updateRuleAmount(varName, value) {
-    if (!ruleState[varName]) ruleState[varName] = { conditionValue: '', amountValue: '' };
-    ruleState[varName].amountValue = value;
-    refreshRuleSummary(varName);
-  }
-
-  function refreshRuleSummary(varName) {
-    const state = ruleState[varName];
-    const idx = selectedVars.indexOf(varName);
-    if (idx === -1) return;
-    const ruleNum = idx + 1;
-    const summaryEl = document.getElementById(`rule-summary-${ruleNum}`);
-    if (!summaryEl) return;
-    const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
-    const amtLabel  = state.amountValue || '$0';
-    summaryEl.querySelector('.rule-summary-text').textContent =
-      buildSummary(varName, condLabel, amtLabel);
-  }
-
-  function deleteRule(varName) {
-    selectedVars = selectedVars.filter(v => v !== varName);
-    // Uncheck the checkbox in the vars dropdown
-    document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
-      if (cb.value === varName) cb.checked = false;
-    });
-    renderTags();
-    renderRules();
-  }
-
-  function openVarsDropdown() {
-    varsDropdownOpen = true;
-    document.getElementById('vars-dropdown').classList.add('open');
-    document.getElementById('vars-control').classList.add('open');
   }
 
   /* ══════════════════════════════════════════════════
