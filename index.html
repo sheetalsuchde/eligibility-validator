@@ -1219,6 +1219,7 @@
       transition: border-color 0.15s;
     }
     .rule-select:focus { outline: none; border-color: var(--brand-blue); }
+    .rule-select.placeholder-shown, .rule-select:has(option[value=""]:checked) { color: var(--text-muted); }
     .rule-select-caret {
       position: absolute;
       right: 10px;
@@ -2395,7 +2396,7 @@
   const VARIABLE_CONFIG = {
     'Employment Type': {
       type: 'select',
-      placeholder: 'Choose Employment Type',
+      placeholder: 'Select Employment Type',
       options: ['Full time', 'Part time', 'Contract', 'Intern'],
       summary: (r) => {
         const val = r.conditionValue || 'any';
@@ -2419,13 +2420,13 @@
     },
     'Benefit duration cap': {
       type: 'select',
-      placeholder: 'Choose duration cap',
+      placeholder: 'Select duration cap',
       options: ['6 months', '12 months', '24 months', 'Unlimited'],
       summary: (r) => `Benefit duration capped at "${r.conditionValue || 'any'}"`,
     },
     'Lifetime payout cap': {
       type: 'select',
-      placeholder: 'Choose payout cap',
+      placeholder: 'Select payout cap',
       options: ['$5,000', '$10,000', '$25,000', 'Unlimited'],
       summary: (r) => `Lifetime payout capped at "${r.conditionValue || 'any'}"`,
     },
@@ -2445,7 +2446,7 @@
     },
     'Location / State': {
       type: 'select',
-      placeholder: 'Choose state',
+      placeholder: 'Select state',
       options: ['CA', 'NY', 'TX', 'FL', 'All states'],
       summary: (r) => `Employees located in "${r.conditionValue || 'any state'}"`,
     },
@@ -2553,9 +2554,7 @@
   function addConditionToRule(ruleId) {
     const rule = rules.find(r => r.id === ruleId);
     if (!rule) return;
-    const usedVars = rule.conditions.map(c => c.varName);
-    const nextVar = ALL_VARIABLE_NAMES.find(v => !usedVars.includes(v)) || ALL_VARIABLE_NAMES[0];
-    rule.conditions.push(blankCondition(nextVar));
+    rule.conditions.push(blankCondition(''));
     renderRules();
   }
 
