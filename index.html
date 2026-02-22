@@ -1079,6 +1079,36 @@
     .rule-amount-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .rule-amount-input[type=number] { -moz-appearance: textfield; }
 
+    /* Compound row (operator + number + duration) */
+    .rule-compound-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rule-number-wrap {
+      position: relative;
+    }
+    .rule-number-input {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 44px;
+      width: 100px;
+      transition: border-color 0.15s;
+    }
+    .rule-number-input:focus { outline: none; border-color: var(--brand-blue); }
+    .rule-number-input::-webkit-inner-spin-button,
+    .rule-number-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .rule-number-input[type=number] { -moz-appearance: textfield; }
+
     /* Rule summary pill */
     .rule-summary {
       background: var(--brand-blue-light);
@@ -1721,20 +1751,77 @@
   let varsDropdownOpen    = false;
 
   /* Independent rule list — each entry is one Rule card */
-  let rules = [];           // [{ id, varName, conditionValue, amountValue }, …]
-  let nextRuleId = 1;       // auto-increment id
+  let rules = [];           // see VARIABLE_CONFIG for per-rule shape
+  let nextRuleId = 1;
 
-  /* Default options per variable type */
-  const VARIABLE_OPTIONS = {
-    'Employment Type':      ['Full time', 'Part time', 'Contract', 'Intern'],
-    'Hire date':            ['< 30 days', '30–90 days', '91–180 days', '> 180 days'],
-    'Benefit duration cap': ['6 months', '12 months', '24 months', 'Unlimited'],
-    'Lifetime payout cap':  ['$5,000', '$10,000', '$25,000', 'Unlimited'],
-    'Hours per week':       ['< 20 hrs', '20–30 hrs', '30–40 hrs', '> 40 hrs'],
-    'Location / State':     ['CA', 'NY', 'TX', 'FL', 'All states'],
+  /*
+   * VARIABLE_CONFIG — defines how each variable's IF block renders and
+   * how its summary sentence is built.
+   *
+   * type: 'select'   → single dropdown, options[]
+   * type: 'compound' → operator dropdown + number input + duration dropdown
+   * type: 'multiselect' → checkboxes, options[]
+   */
+  const VARIABLE_CONFIG = {
+    'Employment Type': {
+      type: 'select',
+      placeholder: 'Choose Employment Type',
+      options: ['Full time', 'Part time', 'Contract', 'Intern'],
+      summary: (r) => {
+        const val = r.conditionValue || 'any';
+        return `Employees with employment type "${val}"`;
+      },
+    },
+    'Hire date': {
+      type: 'compound',
+      operatorLabel: 'Condition',
+      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)'],
+      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤' },
+      numberLabel: 'Number',
+      durationLabel: 'Duration',
+      durations: ['Days', 'Weeks', 'Months', 'Years'],
+      summary: (r) => {
+        const op  = r.operator  ? (r.operator.startsWith('≥') ? 'at least' : 'at most') : '—';
+        const num = r.number    || '0';
+        const dur = r.duration  || 'Days';
+        return `Employees hired ${op} ${num} ${dur} ago`;
+      },
+    },
+    'Benefit duration cap': {
+      type: 'select',
+      placeholder: 'Choose duration cap',
+      options: ['6 months', '12 months', '24 months', 'Unlimited'],
+      summary: (r) => `Benefit duration capped at "${r.conditionValue || 'any'}"`,
+    },
+    'Lifetime payout cap': {
+      type: 'select',
+      placeholder: 'Choose payout cap',
+      options: ['$5,000', '$10,000', '$25,000', 'Unlimited'],
+      summary: (r) => `Lifetime payout capped at "${r.conditionValue || 'any'}"`,
+    },
+    'Hours per week': {
+      type: 'compound',
+      operatorLabel: 'Condition',
+      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)'],
+      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤' },
+      numberLabel: 'Hours',
+      durationLabel: null,   // no duration unit needed — always "hrs/week"
+      durations: [],
+      summary: (r) => {
+        const op  = r.operator ? (r.operator.startsWith('≥') ? 'at least' : 'at most') : '—';
+        const num = r.number || '0';
+        return `Employees working ${op} ${num} hours per week`;
+      },
+    },
+    'Location / State': {
+      type: 'select',
+      placeholder: 'Choose state',
+      options: ['CA', 'NY', 'TX', 'FL', 'All states'],
+      summary: (r) => `Employees located in "${r.conditionValue || 'any state'}"`,
+    },
   };
 
-  const ALL_VARIABLE_NAMES = Object.keys(VARIABLE_OPTIONS);
+  const ALL_VARIABLE_NAMES = Object.keys(VARIABLE_CONFIG);
 
 
   /* ══════════════════════════════════════════════════
@@ -1849,15 +1936,18 @@
   /* ══════════════════════════════════════════════════
      RULE MANAGEMENT
   ══════════════════════════════════════════════════ */
+  function blankRule(varName) {
+    return { id: nextRuleId++, varName, conditionValue: '', operator: '', number: '', duration: '', amountValue: '' };
+  }
+
   function addRuleForVar(varName) {
-    rules.push({ id: nextRuleId++, varName, conditionValue: '', amountValue: '' });
+    rules.push(blankRule(varName));
     renderRules();
   }
 
   function addBlankRule() {
-    // Default to the first variable, or empty string if none selected
     const defaultVar = selectedVars[0] || ALL_VARIABLE_NAMES[0];
-    rules.push({ id: nextRuleId++, varName: defaultVar, conditionValue: '', amountValue: '' });
+    rules.push(blankRule(defaultVar));
     renderRules();
   }
 
@@ -1869,36 +1959,121 @@
   function updateRuleVar(id, varName) {
     const rule = rules.find(r => r.id === id);
     if (!rule) return;
-    rule.varName = varName;
-    rule.conditionValue = '';  // reset condition when variable changes
+    Object.assign(rule, blankRule(varName));
+    rule.id = id;   // restore original id
     renderRules();
   }
 
+  /* select-type variables */
   function updateRuleCondition(id, value) {
     const rule = rules.find(r => r.id === id);
-    if (rule) rule.conditionValue = value;
-    refreshRuleSummaryById(id);
+    if (rule) { rule.conditionValue = value; refreshRuleSummaryById(id); }
+  }
+
+  /* compound-type variables */
+  function updateRuleOperator(id, value) {
+    const rule = rules.find(r => r.id === id);
+    if (rule) { rule.operator = value; refreshRuleSummaryById(id); }
+  }
+  function updateRuleNumber(id, value) {
+    const rule = rules.find(r => r.id === id);
+    if (rule) { rule.number = value; refreshRuleSummaryById(id); }
+  }
+  function updateRuleDuration(id, value) {
+    const rule = rules.find(r => r.id === id);
+    if (rule) { rule.duration = value; refreshRuleSummaryById(id); }
   }
 
   function updateRuleAmount(id, value) {
     const rule = rules.find(r => r.id === id);
-    if (rule) rule.amountValue = value ? '$' + value : '';
-    refreshRuleSummaryById(id);
+    if (rule) { rule.amountValue = value ? '$' + value : ''; refreshRuleSummaryById(id); }
+  }
+
+  /* ── Summary builders ── */
+  function buildRuleSummary(rule) {
+    const cfg = VARIABLE_CONFIG[rule.varName];
+    if (!cfg) return '—';
+    const condPart = cfg.summary(rule);
+    const amt = rule.amountValue || '$0';
+    return `${condPart} → repayment of ${amt} per month`;
   }
 
   function refreshRuleSummaryById(id) {
     const rule = rules.find(r => r.id === id);
     if (!rule) return;
-    const summaryEl = document.getElementById(`rule-summary-${id}`);
-    if (!summaryEl) return;
-    const condLabel = rule.conditionValue || (VARIABLE_OPTIONS[rule.varName] ? VARIABLE_OPTIONS[rule.varName][0] : '—');
-    const amtLabel  = rule.amountValue || '$0';
-    summaryEl.querySelector('.rule-summary-text').textContent =
-      buildSummary(rule.varName, condLabel, amtLabel);
+    const el = document.getElementById(`rule-summary-${id}`);
+    if (el) el.querySelector('.rule-summary-text').textContent = buildRuleSummary(rule);
   }
 
-  function buildSummary(varName, condVal, amount) {
-    return `All ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
+  /* ── IF-block HTML builders per variable type ── */
+  function buildIfFields(rule) {
+    const id  = rule.id;
+    const cfg = VARIABLE_CONFIG[rule.varName];
+    if (!cfg) return '';
+
+    if (cfg.type === 'select') {
+      const opts = ['', ...cfg.options]
+        .map(o => o === ''
+          ? `<option value="" disabled ${!rule.conditionValue ? 'selected' : ''}>${cfg.placeholder}</option>`
+          : `<option value="${o}" ${rule.conditionValue === o ? 'selected' : ''}>${o}</option>`)
+        .join('');
+      return `
+        <div class="rule-select-wrap">
+          <span class="rule-select-label">${rule.varName}</span>
+          <select class="rule-select" onchange="updateRuleCondition(${id}, this.value)">
+            ${opts}
+          </select>
+          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>`;
+    }
+
+    if (cfg.type === 'compound') {
+      const opOpts = ['', ...cfg.operators]
+        .map(o => o === ''
+          ? `<option value="" disabled ${!rule.operator ? 'selected' : ''}>Choose condition</option>`
+          : `<option value="${o}" ${rule.operator === o ? 'selected' : ''}>${o}</option>`)
+        .join('');
+
+      const durField = cfg.durations && cfg.durations.length > 0 ? `
+        <div class="rule-select-wrap">
+          <span class="rule-select-label">${cfg.durationLabel}</span>
+          <select class="rule-select" style="min-width:120px" onchange="updateRuleDuration(${id}, this.value)">
+            ${cfg.durations.map(d => `<option value="${d}" ${rule.duration === d ? 'selected' : ''}>${d}</option>`).join('')}
+          </select>
+          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>` : '';
+
+      return `
+        <div class="rule-compound-row">
+          <div class="rule-select-wrap" style="flex:1">
+            <span class="rule-select-label">${cfg.operatorLabel}</span>
+            <select class="rule-select" style="min-width:220px;width:100%" onchange="updateRuleOperator(${id}, this.value)">
+              ${opOpts}
+            </select>
+            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="rule-number-wrap">
+            <span class="rule-select-label">${cfg.numberLabel}</span>
+            <input
+              type="number"
+              class="rule-number-input"
+              min="0"
+              placeholder="0"
+              value="${rule.number || ''}"
+              oninput="updateRuleNumber(${id}, this.value)"
+            />
+          </div>
+          ${durField}
+        </div>`;
+    }
+
+    return '';
   }
 
   /* ══════════════════════════════════════════════════
@@ -1909,30 +2084,18 @@
     area.innerHTML = '';
 
     rules.forEach((rule, idx) => {
-      const ruleNum = idx + 1;
-      const id = rule.id;
-
-      // Variable selector options
-      const varOpts = ALL_VARIABLE_NAMES
+      const ruleNum  = idx + 1;
+      const id       = rule.id;
+      const varOpts  = ALL_VARIABLE_NAMES
         .map(v => `<option value="${v}" ${rule.varName === v ? 'selected' : ''}>${v}</option>`)
         .join('');
-
-      // Condition options for the current variable
-      const condOpts = (VARIABLE_OPTIONS[rule.varName] || ['Option A', 'Option B', 'Option C'])
-        .map(o => `<option value="${o}" ${rule.conditionValue === o ? 'selected' : ''}>${o}</option>`)
-        .join('');
-
-      // Summary
-      const condLabel = rule.conditionValue || (VARIABLE_OPTIONS[rule.varName] ? VARIABLE_OPTIONS[rule.varName][0] : '—');
-      const amtLabel  = rule.amountValue || '$0';
-      const summaryText = buildSummary(rule.varName, condLabel, amtLabel);
-      const amountRaw = rule.amountValue ? rule.amountValue.replace(/[^0-9.]/g, '') : '';
+      const amountRaw   = rule.amountValue ? rule.amountValue.replace(/[^0-9.]/g, '') : '';
+      const summaryText = buildRuleSummary(rule);
 
       const card = document.createElement('div');
       card.className = 'rule-card';
       card.id = `rule-card-${id}`;
       card.innerHTML = `
-        <!-- Rule header: badge + delete -->
         <div class="rule-header">
           <div class="rule-badge">
             <svg class="rule-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1948,10 +2111,8 @@
           </button>
         </div>
 
-        <!-- IF label -->
         <div class="rule-if-label">IF (select conditions)</div>
 
-        <!-- Condition box (white inner card) -->
         <div class="rule-condition-box">
           <!-- Variable selector -->
           <div class="rule-select-wrap">
@@ -1963,20 +2124,10 @@
               <polyline points="6 9 12 15 18 9"/>
             </svg>
           </div>
-
-          <!-- Condition value select -->
-          <div class="rule-select-wrap">
-            <span class="rule-select-label">Type</span>
-            <select class="rule-select" onchange="updateRuleCondition(${id}, this.value)">
-              ${condOpts}
-            </select>
-            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
+          <!-- Variable-specific condition fields -->
+          ${buildIfFields(rule)}
         </div>
 
-        <!-- THEN section -->
         <div class="rule-then-area">
           <div class="rule-then-label">THEN</div>
           <div class="rule-then-inner">
@@ -1994,12 +2145,11 @@
                   oninput="updateRuleAmount(${id}, this.value)"
                 />
               </div>
-              <span>[per month]</span>
+              <span>per month</span>
             </div>
           </div>
         </div>
 
-        <!-- Rule Summary -->
         <div class="rule-summary" id="rule-summary-${id}">
           <div class="rule-summary-label">Rule ${ruleNum} Summary</div>
           <div class="rule-summary-text">${summaryText}</div>
@@ -2008,7 +2158,6 @@
       area.appendChild(card);
     });
 
-    // "Add another Rule" button — always shown once at least one rule exists
     if (rules.length > 0) {
       const addBtn = document.createElement('button');
       addBtn.className = 'add-rule-btn';
