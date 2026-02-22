@@ -1459,45 +1459,39 @@
     </div>
   </div>
 
-  <!-- Eligibility Variables card -->
-  <div class="form-card" style="gap:32px;">
-    <!-- Top row: left label block + right multi-select (two-column) -->
+  <!-- Card 1: Benefit / Product — two-column layout -->
+  <div class="form-card">
     <div class="form-section">
       <div class="form-block">
-        <div class="form-block-title">Eligibility Variables</div>
-        <div class="form-block-desc">Define conditions and repayment amounts.</div>
+        <div class="form-block-title">Start with a Benefit or Product</div>
+        <div class="form-block-desc">Choose the benefit or product you want to configure eligibility rules for</div>
       </div>
       <div class="form-right">
-        <div class="select-wrap" id="vars-select-wrap">
-          <div class="select-label">Select Eligibility Variables <span class="asterisk">✱</span></div>
-          <div class="select-control" id="vars-control" onclick="toggleDropdown('vars')">
-            <div class="tags-wrap" id="vars-tags">
-              <span class="select-placeholder" id="vars-placeholder">Select variables...</span>
-            </div>
+        <div class="select-wrap" id="benefit-select-wrap">
+          <div class="select-label">Select Benefit <span class="asterisk">✱</span></div>
+          <div class="select-control" id="benefit-control" onclick="toggleDropdown('benefit')">
+            <span class="select-placeholder" id="benefit-placeholder">Select Benefit</span>
+            <span class="select-value-display" id="benefit-value" style="display:none"></span>
             <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div class="dropdown-menu" id="vars-dropdown">
-            <label class="checkbox-item">
-              <input type="checkbox" value="Employment Type" onchange="toggleVar(this)" /> Employment Type
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" value="Hire date" onchange="toggleVar(this)" /> Hire date
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" value="Benefit duration cap" onchange="toggleVar(this)" /> Benefit duration cap
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" value="Lifetime payout cap" onchange="toggleVar(this)" /> Lifetime payout cap
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" value="Hours per week" onchange="toggleVar(this)" /> Hours per week
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" value="Location / State" onchange="toggleVar(this)" /> Location / State
-            </label>
+          <div class="dropdown-menu" id="benefit-dropdown">
+            <div class="dropdown-item" onclick="selectBenefit('Student Loan Employer Contribution')">Student Loan Employer Contribution</div>
+            <div class="dropdown-item" onclick="selectBenefit('529 College Savings Plan')">529 College Savings Plan</div>
+            <div class="dropdown-item" onclick="selectBenefit('Health Savings Account (HSA)')">Health Savings Account (HSA)</div>
+            <div class="dropdown-item" onclick="selectBenefit('Dependent Care FSA')">Dependent Care FSA</div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" onclick="selectBenefit('Other Benefit')">Other Benefit</div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Eligibility Variables — rule editor -->
+  <div class="form-card" style="gap:32px;">
+    <div class="form-block">
+      <div class="form-block-title">Eligibility Variables</div>
+      <div class="form-block-desc">Define conditions and repayment amounts for this benefit.</div>
     </div>
 
     <!-- Rule cards rendered below, full-width inside the card -->
@@ -1723,6 +1717,10 @@
     <div>
       <div class="confirm-section-title">Validator Summary</div>
       <div class="confirm-row">
+        <span class="confirm-row-label">Benefit / Product</span>
+        <span class="confirm-row-value" id="confirm-benefit">Student Loan Employer Contributions</span>
+      </div>
+      <div class="confirm-row">
         <span class="confirm-row-label">Eligibility Variables</span>
         <span class="confirm-row-value" id="confirm-vars">Employment Type, Hire date</span>
       </div>
@@ -1790,7 +1788,7 @@
       <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#E6FAEE"/><path d="M12 20L17 25L28 14" stroke="#027A42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <h2>Validator Activated!</h2>
-    <p>Your eligibility validator is now live. Eligibility checks will begin running on your next cycle — <strong>March 01, 2026</strong>.</p>
+    <p>Your eligibility validator for <strong id="success-benefit">Student Loan Employer Contributions</strong> is now live. Eligibility checks will begin running on your next cycle — <strong>March 01, 2026</strong>.</p>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
       <button class="btn btn-outline" onclick="navigate('screen-landing')">Back to Home</button>
       <button class="btn btn-primary" onclick="navigate('screen-step1')">Create Another Validator</button>
@@ -1803,8 +1801,8 @@
   /* ══════════════════════════════════════════════════
      STATE
   ══════════════════════════════════════════════════ */
-  let selectedVars    = [];          // tracks which checkboxes are ticked (for the tags strip)
-  let varsDropdownOpen    = false;
+  let selectedBenefit = '';
+  let benefitDropdownOpen = false;
 
   /* Independent rule list — each entry is one Rule card */
   let rules = [];           // see VARIABLE_CONFIG for per-rule shape
@@ -1897,76 +1895,38 @@
   function toggleFaq(item) { item.classList.toggle('open'); }
 
   /* ══════════════════════════════════════════════════
-     VARIABLES DROPDOWN
+     BENEFIT DROPDOWN
   ══════════════════════════════════════════════════ */
   function toggleDropdown(type) {
-    if (type === 'vars') {
-      varsDropdownOpen = !varsDropdownOpen;
-      document.getElementById('vars-dropdown').classList.toggle('open', varsDropdownOpen);
-      document.getElementById('vars-control').classList.toggle('open', varsDropdownOpen);
+    if (type === 'benefit') {
+      benefitDropdownOpen = !benefitDropdownOpen;
+      document.getElementById('benefit-dropdown').classList.toggle('open', benefitDropdownOpen);
+      document.getElementById('benefit-control').classList.toggle('open', benefitDropdownOpen);
     }
   }
 
   function closeDropdown(type) {
-    if (type === 'vars') {
-      varsDropdownOpen = false;
-      document.getElementById('vars-dropdown').classList.remove('open');
-      document.getElementById('vars-control').classList.remove('open');
+    if (type === 'benefit') {
+      benefitDropdownOpen = false;
+      document.getElementById('benefit-dropdown').classList.remove('open');
+      document.getElementById('benefit-control').classList.remove('open');
     }
   }
 
   function closeAllDropdowns() {
-    closeDropdown('vars');
+    closeDropdown('benefit');
   }
 
-  /* ══════════════════════════════════════════════════
-     ELIGIBILITY VARIABLES MULTI-SELECT (tag strip)
-  ══════════════════════════════════════════════════ */
-  function toggleVar(checkbox) {
-    const val = checkbox.value;
-    if (checkbox.checked) {
-      if (!selectedVars.includes(val)) {
-        selectedVars.push(val);
-        // Also add a rule card for this variable automatically
-        addRuleForVar(val);
-      }
-    } else {
-      selectedVars = selectedVars.filter(v => v !== val);
-      // Remove rule cards whose first condition matches this variable
-      rules = rules.filter(r => !(r.conditions.length === 1 && r.conditions[0].varName === val));
-      renderRules();
-    }
-    renderTags();
+  function selectBenefit(value) {
+    selectedBenefit = value;
+    document.getElementById('benefit-placeholder').style.display = 'none';
+    const v = document.getElementById('benefit-value');
+    v.style.display = 'block';
+    v.textContent = value;
+    document.getElementById('benefit-control').classList.add('has-value');
+    closeDropdown('benefit');
   }
 
-  function removeTag(val) {
-    selectedVars = selectedVars.filter(v => v !== val);
-    document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
-      if (cb.value === val) cb.checked = false;
-    });
-    rules = rules.filter(r => !(r.conditions.length === 1 && r.conditions[0].varName === val));
-    renderTags();
-    renderRules();
-  }
-
-  function renderTags() {
-    const wrap = document.getElementById('vars-tags');
-    if (selectedVars.length === 0) {
-      wrap.innerHTML = '<span class="select-placeholder" id="vars-placeholder">Select variables...</span>';
-      return;
-    }
-    wrap.innerHTML = selectedVars.map(v => {
-      const safe = v.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      return `<span class="tag">${v}
-        <span class="tag-remove" onclick="event.stopPropagation();removeTag('${safe}')">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <circle cx="5" cy="5" r="4.5" stroke="currentColor"/>
-            <path d="M3.5 3.5L6.5 6.5M6.5 3.5L3.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </span>
-      </span>`;
-    }).join('');
-  }
 
   /* ══════════════════════════════════════════════════
      RULE MANAGEMENT
@@ -1991,14 +1951,8 @@
     };
   }
 
-  function addRuleForVar(varName) {
-    rules.push(blankRule(varName));
-    renderRules();
-  }
-
   function addBlankRule() {
-    const defaultVar = selectedVars[0] || ALL_VARIABLE_NAMES[0];
-    rules.push(blankRule(defaultVar));
+    rules.push(blankRule(ALL_VARIABLE_NAMES[0]));
     renderRules();
   }
 
@@ -2291,10 +2245,8 @@
      STEP 2: DRY RUN
   ══════════════════════════════════════════════════ */
   function goToStep2() {
-    if (selectedVars.length > 0) {
-      const summary = selectedVars.slice(0, 3).join(' · ') + (selectedVars.length > 3 ? ' · …' : '');
-      document.getElementById('dry-run-vars-summary').textContent = summary;
-      document.getElementById('dry-run-rule-count').textContent = selectedVars.length;
+    if (rules.length > 0) {
+      document.getElementById('dry-run-rule-count').textContent = rules.length;
     }
     navigate('screen-step2');
   }
@@ -2311,8 +2263,8 @@
      STEP 3: CONFIRMATION
   ══════════════════════════════════════════════════ */
   function showConfirmation() {
-    document.getElementById('confirm-vars').textContent =
-      selectedVars.length > 0 ? selectedVars.join(', ') : 'None selected';
+    document.getElementById('confirm-benefit').textContent =
+      selectedBenefit || 'Student Loan Employer Contributions';
     document.getElementById('confirm-rule-count').textContent =
       rules.length || 0;
   }
@@ -2321,6 +2273,8 @@
      ACTIVATE
   ══════════════════════════════════════════════════ */
   function activate() {
+    document.getElementById('success-benefit').textContent =
+      selectedBenefit || 'Student Loan Employer Contributions';
     navigate('screen-success');
   }
 
@@ -2333,8 +2287,8 @@
 
   /* ─── Global click-outside to close dropdowns ─── */
   document.addEventListener('click', function(e) {
-    const vWrap = document.getElementById('vars-select-wrap');
-    if (varsDropdownOpen && vWrap && !vWrap.contains(e.target)) closeDropdown('vars');
+    const bWrap = document.getElementById('benefit-select-wrap');
+    if (benefitDropdownOpen && bWrap && !bWrap.contains(e.target)) closeDropdown('benefit');
   });
 </script>
 </body>
