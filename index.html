@@ -358,6 +358,7 @@
       align-items: center;
       gap: 4px;
     }
+    /* Default dot (inactive steps) */
     .stepper-dot {
       width: 8px;
       height: 8px;
@@ -367,6 +368,8 @@
     }
     .stepper-step.done .stepper-dot { background: var(--brand-blue); }
     .stepper-step.active .stepper-dot { background: var(--brand-blue); }
+
+    /* Blue checkmark circle for completed step */
     .stepper-check {
       width: 16px;
       height: 16px;
@@ -385,6 +388,7 @@
       color: var(--text-secondary);
       line-height: 1.4;
     }
+    .stepper-step.done .stepper-label { color: var(--brand-blue); }
     .stepper-step.active .stepper-label { color: var(--brand-blue); }
     .stepper-sublabel {
       font-size: 12px;
@@ -828,12 +832,11 @@
     /* The vars card stacks below the benefit card with its own margin */
     .form-card + .form-card { margin-top: 16px; }
 
-    /* Rule block container inside the vars card */
+    /* Rule block container inside the vars card — no extra top margin, gap between rule cards */
     .rules-area {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-top: 12px;
     }
 
     .rule-card {
@@ -1257,32 +1260,41 @@
     </div>
   </div>
 
-  <!-- Stepper -->
+  <!-- Stepper: 4 steps, Step 1 done (checkmark), Step 2 active (blue), Steps 3-4 inactive -->
   <div class="stepper">
+    <div class="stepper-step done">
+      <div class="stepper-base">
+        <div class="stepper-check">
+          <svg viewBox="0 0 10 10" fill="none"><polyline points="1.5 5 4 7.5 8.5 2.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stepper-label">Configure &amp; Save</span>
+      </div>
+      <span class="stepper-sublabel">Step 1 of 4</span>
+    </div>
     <div class="stepper-step active">
       <div class="stepper-base">
         <div class="stepper-dot"></div>
-        <span class="stepper-label">Configure &amp; Save</span>
+        <span class="stepper-label">Eligibility Variables</span>
       </div>
-      <span class="stepper-sublabel">Step 1 of 3</span>
+      <span class="stepper-sublabel">Step 2 of 4</span>
     </div>
     <div class="stepper-step">
       <div class="stepper-base">
         <div class="stepper-dot"></div>
         <span class="stepper-label">Dry Run</span>
       </div>
-      <span class="stepper-sublabel">Step 2 of 3</span>
+      <span class="stepper-sublabel">Step 3 of 4</span>
     </div>
     <div class="stepper-step">
       <div class="stepper-base">
         <div class="stepper-dot"></div>
         <span class="stepper-label">Set Validator</span>
       </div>
-      <span class="stepper-sublabel">Step 3 of 3</span>
+      <span class="stepper-sublabel">Step 4 of 4</span>
     </div>
   </div>
 
-  <!-- Card 1: Benefit / Product -->
+  <!-- Card 1: Benefit / Product — two-column layout -->
   <div class="form-card">
     <div class="form-section">
       <div class="form-block">
@@ -1292,13 +1304,15 @@
       <div class="form-right">
         <div class="select-wrap" id="benefit-select-wrap">
           <div class="select-label">Select Benefit <span class="asterisk">✱</span></div>
-          <div class="select-control" id="benefit-control" onclick="toggleDropdown('benefit')">
-            <span class="select-placeholder" id="benefit-placeholder">Placeholder</span>
-            <span class="select-value-display" id="benefit-value" style="display:none"></span>
+          <div class="select-control has-value" id="benefit-control" onclick="toggleDropdown('benefit')">
+            <span class="select-placeholder" id="benefit-placeholder" style="display:none">Placeholder</span>
+            <span class="select-value-display" id="benefit-value">Student Loan Employer Contribution</span>
             <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="dropdown-menu" id="benefit-dropdown">
-            <div class="dropdown-item" onclick="selectBenefit('Student Loan Employer Contributions')">Student Loan Employer Contributions</div>
+            <div class="dropdown-item selected" onclick="selectBenefit('Student Loan Employer Contribution')">Student Loan Employer Contribution
+              <svg class="dropdown-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
             <div class="dropdown-item" onclick="selectBenefit('529 College Savings Plan')">529 College Savings Plan</div>
             <div class="dropdown-item" onclick="selectBenefit('Health Savings Account (HSA)')">Health Savings Account (HSA)</div>
             <div class="dropdown-item" onclick="selectBenefit('Dependent Care FSA')">Dependent Care FSA</div>
@@ -1310,52 +1324,54 @@
     </div>
   </div>
 
-  <!-- Card 2: Eligibility Variables + dynamic Rule cards -->
-  <div class="form-card" style="gap:12px;">
-    <!-- Header row: title + description above the select -->
-    <div>
-      <div class="form-block-title" style="margin-bottom:4px;">Eligibility Variables</div>
-      <div class="form-block-desc">Choose the benefit or product you want to configure eligibility rules for</div>
-    </div>
-
-    <!-- Multi-select for variables -->
-    <div class="select-wrap" id="vars-select-wrap">
-      <div class="select-label">Eligibility variables</div>
-      <div class="select-control" id="vars-control" onclick="toggleDropdown('vars')">
-        <div class="tags-wrap" id="vars-tags">
-          <span class="select-placeholder" id="vars-placeholder">Select variables...</span>
+  <!-- Card 2: Eligibility Variables — two-column layout matching Figma -->
+  <div class="form-card" style="gap:32px;">
+    <!-- Top row: left label block + right multi-select (two-column) -->
+    <div class="form-section">
+      <div class="form-block">
+        <div class="form-block-title">Eligibility Variables</div>
+        <div class="form-block-desc">Define conditions and repayment amounts.</div>
+      </div>
+      <div class="form-right">
+        <div class="select-wrap" id="vars-select-wrap">
+          <div class="select-label">Select Benefit <span class="asterisk">✱</span></div>
+          <div class="select-control" id="vars-control" onclick="toggleDropdown('vars')">
+            <div class="tags-wrap" id="vars-tags">
+              <span class="select-placeholder" id="vars-placeholder">Select variables...</span>
+            </div>
+            <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="dropdown-menu" id="vars-dropdown">
+            <label class="checkbox-item">
+              <input type="checkbox" value="Employment Type" onchange="toggleVar(this)" /> Employment Type
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" value="Hire date" onchange="toggleVar(this)" /> Hire date
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" value="Benefit duration cap" onchange="toggleVar(this)" /> Benefit duration cap
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" value="Lifetime payout cap" onchange="toggleVar(this)" /> Lifetime payout cap
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" value="Hours per week" onchange="toggleVar(this)" /> Hours per week
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" value="Location / State" onchange="toggleVar(this)" /> Location / State
+            </label>
+          </div>
         </div>
-        <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </div>
-      <div class="dropdown-menu" id="vars-dropdown">
-        <label class="checkbox-item">
-          <input type="checkbox" value="Employment Type" onchange="toggleVar(this)" /> Employment Type
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="Hire date" onchange="toggleVar(this)" /> Hire date
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="Benefit duration cap" onchange="toggleVar(this)" /> Benefit duration cap
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="Lifetime payout cap" onchange="toggleVar(this)" /> Lifetime payout cap
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="Hours per week" onchange="toggleVar(this)" /> Hours per week
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" value="Location / State" onchange="toggleVar(this)" /> Location / State
-        </label>
       </div>
     </div>
 
-    <!-- Rule cards rendered here dynamically -->
+    <!-- Rule cards rendered below, full-width inside the card -->
     <div id="rules-area" class="rules-area"></div>
   </div>
 
   <div class="btn-group">
-    <button class="btn btn-ghost" onclick="navigate('screen-landing')">Back</button>
-    <button class="btn btn-primary" onclick="goToStep2()">Next</button>
+    <button class="btn btn-outline" onclick="navigate('screen-landing')">Back</button>
+    <button class="btn btn-primary" onclick="goToStep2()">Save Configuration</button>
   </div>
 </div>
 
@@ -1656,7 +1672,7 @@
   /* ══════════════════════════════════════════════════
      STATE
   ══════════════════════════════════════════════════ */
-  let selectedBenefit = '';
+  let selectedBenefit = 'Student Loan Employer Contribution';
   let selectedVars    = [];          // ordered list of selected variable names
   let benefitDropdownOpen = false;
   let varsDropdownOpen    = false;
@@ -1746,7 +1762,7 @@
         selectedVars.push(val);
         // initialise rule state for this variable
         if (!ruleState[val]) {
-          ruleState[val] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+          ruleState[val] = { conditionValue: '', amountValue: '' };
         }
       }
     } else {
@@ -1789,11 +1805,10 @@
   ══════════════════════════════════════════════════ */
   function renderRules() {
     const area = document.getElementById('rules-area');
-    // Remove existing rule cards (but not the "add another" button — we'll re-add it)
     area.innerHTML = '';
 
     selectedVars.forEach((varName, idx) => {
-      const state = ruleState[varName] || { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+      const state = ruleState[varName] || { conditionValue: '', amountValue: '' };
       const ruleNum = idx + 1;
       const safe = varName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
@@ -1810,7 +1825,7 @@
       // Rule summary text
       const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
       const amtLabel  = state.amountValue || '$200';
-      const summaryText = buildSummary(varName, condLabel, state.activeToggle, amtLabel);
+      const summaryText = buildSummary(varName, condLabel, amtLabel);
 
       const card = document.createElement('div');
       card.className = 'rule-card';
@@ -1835,9 +1850,9 @@
         <!-- IF label -->
         <div class="rule-if-label">IF (select conditions)</div>
 
-        <!-- Condition box -->
+        <!-- Condition box (white inner card) -->
         <div class="rule-condition-box">
-          <!-- Variable checkbox (checked, read-only — the variable is already selected) -->
+          <!-- Variable row: checkbox (checked, read-only) + variable name -->
           <div class="rule-condition-variable">
             <input type="checkbox" checked disabled />
             <span>${varName}</span>
@@ -1846,8 +1861,7 @@
           <!-- Condition value select -->
           <div class="rule-select-wrap">
             <span class="rule-select-label">Type</span>
-            <select class="rule-select"
-              onchange="updateRuleCondition('${safe}', this.value)">
+            <select class="rule-select" onchange="updateRuleCondition('${safe}', this.value)">
               ${condOpts}
             </select>
             <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1860,27 +1874,12 @@
         <div class="rule-then-area">
           <div class="rule-then-label">THEN</div>
           <div class="rule-then-inner">
-            <!-- Flat / Tiers toggle -->
-            <div class="toggle-group">
-              <button class="toggle-btn ${state.activeToggle === 'Flat' ? 'active' : ''}"
-                onclick="setToggle('${safe}', 'Flat', this)">
-                ${state.activeToggle === 'Flat' ? `<svg class="toggle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
-                Flat
-              </button>
-              <button class="toggle-btn ${state.activeToggle === 'Tiers' ? 'active' : ''}"
-                onclick="setToggle('${safe}', 'Tiers', this)">
-                ${state.activeToggle === 'Tiers' ? `<svg class="toggle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
-                Tiers
-              </button>
-            </div>
-
-            <!-- Provide repayment row -->
+            <!-- Single row: "Provide repayment of [amount select] [per month]" -->
             <div class="rule-then-row">
               <span>Provide repayment of</span>
               <div class="rule-select-wrap">
                 <span class="rule-select-label">Amount</span>
-                <select class="rule-select" style="min-width:130px;"
-                  onchange="updateRuleAmount('${safe}', this.value)">
+                <select class="rule-select" style="min-width:130px;" onchange="updateRuleAmount('${safe}', this.value)">
                   ${amtOpts}
                 </select>
                 <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1892,16 +1891,16 @@
           </div>
         </div>
 
-        <!-- Rule Summary -->
+        <!-- Rule Summary (blue background) -->
         <div class="rule-summary" id="rule-summary-${ruleNum}">
-          <div class="rule-summary-label">Rule Summary</div>
+          <div class="rule-summary-label">Rule ${ruleNum} Summary</div>
           <div class="rule-summary-text">${summaryText}</div>
         </div>
       `;
       area.appendChild(card);
     });
 
-    // "Add another Rule" button (only shown when at least one variable is selected)
+    // "Add another Rule" button — only shown when at least one variable is selected
     if (selectedVars.length > 0) {
       const addBtn = document.createElement('button');
       addBtn.className = 'add-rule-btn';
@@ -1916,35 +1915,21 @@
     }
   }
 
-  function buildSummary(varName, condVal, toggle, amount) {
-    const prefix = toggle === 'Flat' ? 'All' : 'Tiered:';
-    return `${prefix} ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
+  function buildSummary(varName, condVal, amount) {
+    return `All ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
   }
 
   /* ─── Update handlers called from inline selects ─── */
   function updateRuleCondition(varName, value) {
-    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+    if (!ruleState[varName]) ruleState[varName] = { conditionValue: '', amountValue: '' };
     ruleState[varName].conditionValue = value;
     refreshRuleSummary(varName);
   }
 
   function updateRuleAmount(varName, value) {
-    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+    if (!ruleState[varName]) ruleState[varName] = { conditionValue: '', amountValue: '' };
     ruleState[varName].amountValue = value;
     refreshRuleSummary(varName);
-  }
-
-  function setToggle(varName, label, btn) {
-    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
-    ruleState[varName].activeToggle = label;
-    // Re-render only the toggle group inside this card without full re-render
-    const card = btn.closest('.rule-card');
-    card.querySelectorAll('.toggle-btn').forEach(b => {
-      const isActive = b.textContent.trim().replace(/\s+/g, ' ').startsWith(label.charAt(0));
-      // simpler: compare data
-    });
-    // Full re-render to keep things consistent
-    renderRules();
   }
 
   function refreshRuleSummary(varName) {
@@ -1957,7 +1942,7 @@
     const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
     const amtLabel  = state.amountValue || '$200';
     summaryEl.querySelector('.rule-summary-text').textContent =
-      buildSummary(varName, condLabel, state.activeToggle, amtLabel);
+      buildSummary(varName, condLabel, amtLabel);
   }
 
   function deleteRule(varName) {
