@@ -898,14 +898,15 @@
       color: var(--text-secondary);
     }
 
-    /* IF condition box (white inner card) */
+    /* IF condition box (white inner card — sized to content) */
     .rule-condition-box {
       background: var(--surface-overlay);
       border-radius: var(--radius-md);
       padding: 12px;
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       gap: 10px;
+      align-self: flex-start; /* don't stretch to full row width */
     }
     .rule-condition-variable {
       display: flex;
@@ -924,14 +925,17 @@
     }
 
     /* Small inline select inside rule */
-    .rule-select-wrap { position: relative; display: inline-flex; }
+    .rule-select-wrap {
+      position: relative;
+      display: inline-block; /* shrink-wraps to select width so caret stays inside */
+    }
     .rule-select {
       appearance: none;
       -webkit-appearance: none;
       background: var(--surface-overlay);
       border: 1px solid var(--border-base);
       border-radius: var(--radius-md);
-      padding: 10px 36px 10px 12px;
+      padding: 10px 36px 10px 12px; /* right pad leaves room for caret */
       font-family: inherit;
       font-size: 15px;
       font-weight: 500;
@@ -939,6 +943,7 @@
       cursor: pointer;
       min-height: 44px;
       min-width: 180px;
+      width: 100%;
       transition: border-color 0.15s;
     }
     .rule-select:focus { outline: none; border-color: var(--brand-blue); }
@@ -982,9 +987,10 @@
       background: var(--surface-overlay);
       border-radius: var(--radius-md);
       padding: 12px;
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       gap: 10px;
+      align-self: flex-start; /* shrink to content width */
     }
 
     /* Toggle button group (Flat / Tiers) */
@@ -1343,15 +1349,13 @@
       <div class="form-right">
         <div class="select-wrap" id="benefit-select-wrap">
           <div class="select-label">Select Benefit <span class="asterisk">✱</span></div>
-          <div class="select-control has-value" id="benefit-control" onclick="toggleDropdown('benefit')">
-            <span class="select-placeholder" id="benefit-placeholder" style="display:none">Placeholder</span>
-            <span class="select-value-display" id="benefit-value">Student Loan Employer Contribution</span>
+          <div class="select-control" id="benefit-control" onclick="toggleDropdown('benefit')">
+            <span class="select-placeholder" id="benefit-placeholder">Select Benefit</span>
+            <span class="select-value-display" id="benefit-value" style="display:none"></span>
             <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="dropdown-menu" id="benefit-dropdown">
-            <div class="dropdown-item selected" onclick="selectBenefit('Student Loan Employer Contribution')">Student Loan Employer Contribution
-              <svg class="dropdown-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
+            <div class="dropdown-item" onclick="selectBenefit('Student Loan Employer Contribution')">Student Loan Employer Contribution</div>
             <div class="dropdown-item" onclick="selectBenefit('529 College Savings Plan')">529 College Savings Plan</div>
             <div class="dropdown-item" onclick="selectBenefit('Health Savings Account (HSA)')">Health Savings Account (HSA)</div>
             <div class="dropdown-item" onclick="selectBenefit('Dependent Care FSA')">Dependent Care FSA</div>
@@ -1711,7 +1715,7 @@
   /* ══════════════════════════════════════════════════
      STATE
   ══════════════════════════════════════════════════ */
-  let selectedBenefit = 'Student Loan Employer Contribution';
+  let selectedBenefit = '';
   let selectedVars    = [];          // ordered list of selected variable names
   let benefitDropdownOpen = false;
   let varsDropdownOpen    = false;
