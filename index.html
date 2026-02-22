@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eligibility Validator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-blue: #265DDC;
+      --brand-blue-hover: #1e4db5;
+      --brand-blue-light: #EFF4FF;
+      --border-base: #E2E4EB;
+      --border-subtle: #F0F2F5;
+      --surface-base: #FAFBFC;
+      --surface-overlay: #fff;
+      --text-primary: #000;
+      --text-subtle: #2A2F3D;
+      --text-muted: #525252;
+      --text-secondary: #3D3D3D;
+      --text-success: #027A42;
+      --success-bg: #E6FAEE;
+      --radius-full: 999px;
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --radius-sm: 4px;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--surface-base);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ───── SCREENS ───── */
+    .screen { display: none; min-height: 100vh; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    /* ───── HEADER ───── */
+    .header {
+      background: var(--surface-overlay);
+      border-bottom: 1px solid var(--border-base);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .header-left, .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .header-right { justify-content: flex-end; }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-lg);
+      padding: 4px 12px 4px 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      min-height: 32px;
+      min-width: 72px;
+    }
+
+    .header-action-btn svg { flex-shrink: 0; }
+
+    .logo-container { display: flex; align-items: center; gap: 4px; }
+    .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 3.2px;
+      padding-right: 4px;
+    }
+    .logo-symbol {
+      width: 24px;
+      height: 24px;
+      background: #265DDC;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo-symbol svg { width: 14px; height: 14px; }
+    .logo-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .logo-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--border-base);
+      flex-shrink: 0;
+      margin: 0 4px;
+    }
+    .partner-logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .partner-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #7B4FE0, #E05FAB);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ───── POLICY BADGE ───── */
+    .policy-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 8px 12px 8px 8px;
+      flex-shrink: 0;
+    }
+    .policy-icon-wrap {
+      background: var(--success-bg);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .policy-text { font-size: 14px; font-weight: 400; color: var(--text-success); white-space: nowrap; }
+    .policy-text strong { font-weight: 700; }
+    .policy-ext-icon { color: var(--text-success); flex-shrink: 0; }
+
+    /* ───── PAGE HERO (landing) ───── */
+    .page-hero {
+      padding: 24px 48px;
+    }
+    .page-hero h1 {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.23;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .page-hero p {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      line-height: 1.5;
+      max-width: 784px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 24px;
+    }
+
+    /* ───── BUTTONS ───── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 12px 24px;
+      min-height: 48px;
+      min-width: 96px;
+      transition: background 0.15s, opacity 0.15s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--brand-blue);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--brand-blue-hover); }
+    .btn-outline {
+      background: transparent;
+      color: var(--brand-blue);
+      border: 1.5px solid var(--brand-blue);
+    }
+    .btn-outline:hover { background: var(--brand-blue-light); }
+    .btn-ghost {
+      background: var(--surface-base);
+      color: var(--text-subtle);
+      border: 1px solid var(--border-base);
+    }
+    .btn-ghost:hover { background: #f0f2f5; }
+
+    /* ───── HOW IT WORKS ───── */
+    .section-card {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 0 48px 24px;
+    }
+    .section-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 32px;
+      line-height: 1.3;
+    }
+
+    .how-it-works-grid {
+      display: flex;
+      gap: 32px;
+    }
+    .how-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .step-number {
+      background: var(--brand-blue-light);
+      border-radius: var(--radius-md);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--brand-blue);
+      flex-shrink: 0;
+    }
+    .how-step-title { font-size: 18px; font-weight: 700; line-height: 1.3; }
+    .how-step-desc { font-size: 16px; font-weight: 400; color: var(--text-subtle); line-height: 1.5; }
+
+    /* ───── FAQ ───── */
+    .faq-section {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 30px;
+      margin: 0 48px 48px;
+    }
+    .faq-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    .faq-item {
+      border-bottom: 1px solid #EBEBEB;
+      padding: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .faq-item:last-of-type { border-bottom: none; }
+    .faq-question { font-size: 18px; font-weight: 500; line-height: 1.5; color: var(--text-primary); }
+    .faq-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+    .faq-item.open .faq-icon { transform: rotate(180deg); }
+    .faq-answer {
+      font-size: 15px;
+      color: var(--text-subtle);
+      line-height: 1.6;
+      padding: 0 0 12px;
+      display: none;
+    }
+    .faq-item.open + .faq-answer { display: block; }
+    .faq-more {
+      display: block;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--brand-blue);
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    /* ───── STEP HEADER (active pages) ───── */
+    .step-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 24px 48px;
+      gap: 24px;
+    }
+    .step-title-block h1 {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.23;
+      margin-bottom: 4px;
+    }
+    .step-title-block p {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
+    /* ───── STEPPER ───── */
+    .stepper {
+      display: flex;
+      align-items: stretch;
+      margin: 0 48px;
+    }
+    .stepper-step {
+      flex: 1;
+      padding: 8px 16px 4px 4px;
+      border-top: 2px solid var(--border-base);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stepper-step.done { border-top-color: var(--brand-blue); }
+    .stepper-step.active { border-top-color: var(--brand-blue); }
+
+    .stepper-base {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .stepper-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-base);
+      flex-shrink: 0;
+    }
+    .stepper-step.done .stepper-dot { background: var(--brand-blue); }
+    .stepper-step.active .stepper-dot { background: var(--brand-blue); }
+    .stepper-check {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--brand-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .stepper-check svg { width: 9px; height: 9px; }
+
+    .stepper-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .stepper-step.active .stepper-label { color: var(--brand-blue); }
+    .stepper-sublabel {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding-left: 24px;
+      line-height: 1.4;
+    }
+
+    /* ───── FORM CONTAINER ───── */
+    .form-container {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 48px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .form-section {
+      display: flex;
+      gap: 128px;
+      align-items: flex-start;
+    }
+    .form-block {
+      width: 384px;
+      min-width: 384px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-block-title {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+    .form-block-desc {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+    .form-right { flex: 1; display: flex; flex-direction: column; gap: 0; }
+
+    /* ───── SELECT ───── */
+    .select-wrap { position: relative; }
+    .select-label {
+      position: absolute;
+      top: -9px;
+      left: 7px;
+      background: var(--surface-overlay);
+      padding: 0 4px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .select-label .asterisk { color: #b81626; font-size: 10px; }
+    .select-control {
+      width: 100%;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .select-control:hover { border-color: var(--brand-blue); }
+    .select-control.has-value { border-color: var(--border-base); }
+    .select-placeholder {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .select-value-display {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .select-chevron {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+    .select-control.open .select-chevron { transform: rotate(180deg); }
+
+    /* Multi-select tags */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
+    }
+    .tag {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #E9E9E9;
+      border-radius: var(--radius-sm);
+      padding: 4px 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .tag-remove {
+      cursor: pointer;
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+    }
+    .tag-remove:hover { color: #333; }
+
+    /* Dropdown menu */
+    .dropdown-menu {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      box-shadow: 0 2px 4px rgba(20,20,20,0.08), 0 1px 2px rgba(20,20,20,0.04);
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+    }
+    .dropdown-menu.open { display: flex; }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 36px;
+      transition: background 0.1s;
+    }
+    .dropdown-item:hover { background: var(--brand-blue-light); }
+    .dropdown-item.selected { background: var(--brand-blue-light); color: var(--brand-blue); }
+    .dropdown-check { width: 18px; height: 18px; color: var(--brand-blue); }
+    .dropdown-divider { height: 1px; background: var(--border-base); margin: 4px 0; }
+
+    /* Checkbox multi-select */
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: background 0.1s;
+    }
+    .checkbox-item:hover { background: var(--brand-blue-light); }
+    .checkbox-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand-blue);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ───── BUTTON GROUP ───── */
+    .btn-group {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 24px 48px;
+      margin-top: auto;
+    }
+
+    /* ───── DRY RUN SCREEN ───── */
+    .dry-run-info {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 48px 0;
+    }
+    .dry-run-info h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .dry-run-info p {
+      font-size: 14px;
+      color: var(--text-subtle);
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .dry-run-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .dry-run-card {
+      background: var(--surface-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .dry-run-card-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .dry-run-card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .dry-run-card-sub {
+      font-size: 13px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+    }
+    .dry-run-card.warning .dry-run-card-value { color: #C27400; }
+    .dry-run-card.danger .dry-run-card-value { color: #b81626; }
+    .dry-run-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      margin-bottom: 8px;
+    }
+    .dry-run-badge.success { background: var(--success-bg); color: var(--text-success); }
+    .dry-run-badge.warning { background: #FFF7E6; color: #C27400; }
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-full);
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 20px;
+      color: var(--text-subtle);
+      transition: background 0.15s;
+    }
+    .download-btn:hover { background: var(--surface-base); }
+
+    /* ───── ACTIVATION / CONFIRMATION SCREEN ───── */
+    .confirm-card {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 48px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .confirm-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 15px;
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row-label { font-weight: 500; color: var(--text-subtle); }
+    .confirm-row-value { font-weight: 600; color: var(--text-primary); }
+    .confirm-active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-bg);
+      color: var(--text-success);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+    }
+    .confirm-active-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-success);
+    }
+    .helper-box {
+      display: flex;
+      gap: 10px;
+      background: #FFFBEB;
+      border: 1px solid #F59E0B;
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #92400E;
+      line-height: 1.5;
+    }
+
+    /* ───── SUCCESS SCREEN ───── */
+    .success-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 48px;
+      text-align: center;
+      flex: 1;
+    }
+    .success-icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--success-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .success-screen h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .success-screen p {
+      font-size: 16px;
+      color: var(--text-subtle);
+      max-width: 480px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    /* ───── EXISTING VALIDATORS LIST (landing variation) ───── */
+    .validators-table {
+      margin: 0 48px 48px;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .validators-table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .validators-table-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th {
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--surface-base);
+    }
+    .table td {
+      padding: 14px 24px;
+      font-size: 15px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .table tr:last-child td { border-bottom: none; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+    .status-badge.active-badge { background: var(--success-bg); color: var(--text-success); }
+    .status-badge.draft-badge { background: #F0F2F5; color: #555; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ───── NOTIFICATIONS / ALERTS ───── */
+    .alert {
+      display: flex;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 0 48px;
+    }
+    .alert-info { background: #EFF4FF; color: var(--brand-blue); border: 1px solid #C7D7FA; }
+    .alert svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* ───── RULE SECTION ───── */
+    /* Two-card layout: benefit card + eligibility-vars card (separate) */
+    .form-card {
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 48px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    /* The vars card stacks below the benefit card with its own margin */
+    .form-card + .form-card { margin-top: 16px; }
+
+    /* Rule block container inside the vars card */
+    .rules-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .rule-card {
+      background: var(--surface-base);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      /* animate in */
+      animation: slideDown 0.2s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .rule-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .rule-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 4px 12px 4px 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 32px;
+    }
+    .rule-badge-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .rule-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .rule-delete-btn:hover { color: #b81626; background: #fff0f0; }
+
+    /* IF label */
+    .rule-if-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* IF condition box (white inner card) */
+    .rule-condition-box {
+      background: var(--surface-overlay);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rule-condition-variable {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+    }
+    .rule-condition-variable input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand-blue);
+      cursor: default;
+      flex-shrink: 0;
+    }
+
+    /* Small inline select inside rule */
+    .rule-select-wrap { position: relative; display: inline-flex; }
+    .rule-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 10px 36px 10px 12px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 180px;
+      transition: border-color 0.15s;
+    }
+    .rule-select:focus { outline: none; border-color: var(--brand-blue); }
+    .rule-select-caret {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-secondary);
+    }
+    .rule-select-label {
+      position: absolute;
+      top: -8px;
+      left: 8px;
+      background: var(--surface-overlay);
+      padding: 0 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      z-index: 1;
+    }
+
+    /* THEN section */
+    .rule-then-area {
+      background: var(--surface-base);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .rule-then-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .rule-then-inner {
+      background: var(--surface-overlay);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Toggle button group (Flat / Tiers) */
+    .toggle-group {
+      display: inline-flex;
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .toggle-btn {
+      background: var(--surface-overlay);
+      border: none;
+      border-right: 1px solid var(--border-base);
+      padding: 10px 20px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s;
+    }
+    .toggle-btn:last-child { border-right: none; }
+    .toggle-btn.active {
+      background: var(--brand-blue-light);
+      color: var(--brand-blue);
+    }
+    .toggle-check {
+      width: 14px;
+      height: 14px;
+      color: var(--brand-blue);
+    }
+
+    /* "Provide repayment of …" row */
+    .rule-then-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rule-then-row span {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    /* Rule summary pill */
+    .rule-summary {
+      background: var(--brand-blue-light);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .rule-summary-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .rule-summary-text {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    /* Add another Rule button */
+    .add-rule-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-base);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-lg);
+      padding: 4px 12px 4px 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      cursor: pointer;
+      min-height: 32px;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+    .add-rule-btn:hover { background: #eef1f7; }
+    .add-rule-btn svg { flex-shrink: 0; }
+
+    /* ───── MISC HELPERS ───── */
+    .spacer { flex: 1; }
+    .mt-auto { margin-top: auto; }
+
+    @media (max-width: 900px) {
+      .form-section { flex-direction: column; gap: 24px; }
+      .form-block { width: 100%; min-width: unset; }
+      .how-it-works-grid { flex-direction: column; }
+      .header { padding: 12px 16px; }
+      .page-hero, .step-header { padding: 20px 20px; }
+      .section-card, .faq-section, .form-container, .dry-run-info, .confirm-card { margin-left: 20px; margin-right: 20px; }
+      .stepper { margin: 0 20px; }
+      .btn-group { padding: 20px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SHARED HEADER (rendered once per screen via JS)
+═══════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════ SCREEN 0: LANDING ═══════════════════════════ -->
+<div class="screen active" id="screen-landing">
+  <!-- header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="header-action-btn">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
+        Menu
+      </button>
+    </div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- hero -->
+  <div class="page-hero">
+    <h1>Automate Benefit Eligibility with Ease</h1>
+    <p>Configure automated eligibility checks for your team in just a few steps. Before you begin, make sure your census file is uploaded in <strong>Employees</strong> so you can validate benefits accurately and seamlessly.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="navigate('screen-step1')">Set Validator</button>
+      <button class="btn btn-ghost" onclick="showValidatorsList()">View Existing Validators</button>
+    </div>
+  </div>
+
+  <!-- How Validation Works -->
+  <div class="section-card">
+    <div class="section-card-title">How Validation Works</div>
+    <div class="how-it-works-grid">
+      <div class="how-step">
+        <div class="step-number">1</div>
+        <div>
+          <div class="how-step-title">Configure Validator</div>
+          <div class="how-step-desc">Define eligibility rules and conditions</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="step-number">2</div>
+        <div>
+          <div class="how-step-title">Test with Dry Run</div>
+          <div class="how-step-desc">Download the report to review flagged records before going live.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="step-number">3</div>
+        <div>
+          <div class="how-step-title">Activate Validator</div>
+          <div class="how-step-desc">Once satisfied with test results, activate the validator.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq-section">
+    <div class="faq-title">Frequently asked questions</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <span class="faq-question">What happens when a user activates a new validator?</span>
+      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="faq-answer">When a new validator is activated, it immediately begins applying eligibility rules to new and existing employee records according to the configured schedule. Any existing in-flight validations complete under the old rules before switching.</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <span class="faq-question">What exactly does a dry run do?</span>
+      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="faq-answer">A dry run simulates your eligibility rules against your current employee census without making any changes. It produces a downloadable report of which employees would be flagged so you can review before going live.</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <span class="faq-question">Is the dry run synchronous or asynchronous?</span>
+      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="faq-answer">Dry runs are asynchronous. You'll receive a notification and can download the report from your dashboard once processing completes — typically within a few minutes for most organizations.</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <span class="faq-question">What happens to in-flight validations during activation?</span>
+      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="faq-answer">In-flight validations that started before activation will complete under the previous rules. New validations triggered after activation will use the updated eligibility configuration.</div>
+
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <span class="faq-question">Can I have multiple validators active at once?</span>
+      <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="faq-answer">Yes, you can configure separate validators for different benefit products. Each runs independently with its own eligibility rules and schedule.</div>
+
+    <a class="faq-more">View more FAQ's</a>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ SCREEN 1: CONFIGURE & SAVE ═══════════════════════════ -->
+<div class="screen" id="screen-step1">
+  <header class="header">
+    <div class="header-left">
+      <button class="header-action-btn">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
+        Menu
+      </button>
+    </div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="step-header">
+    <div class="step-title-block">
+      <h1>Eligibility Validator</h1>
+      <p>Automate eligibility checks and benefit calculations across employee programs</p>
+    </div>
+    <div class="policy-badge">
+      <div class="policy-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2L3.5 4.5V10C3.5 13.5 6.25 16.75 10 17.5C13.75 16.75 16.5 13.5 16.5 10V4.5L10 2ZM8.5 13L5.5 10L6.91 8.59L8.5 10.17L13.09 5.58L14.5 7L8.5 13Z" fill="#027A42"/><circle cx="12" cy="13" r="2.5" fill="#027A42" opacity="0.3"/><path d="M11 12.5L12 13.5L14 11.5" stroke="#027A42" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+      <span class="policy-text">Your data is protected by our <strong>security policy</strong></span>
+      <svg class="policy-ext-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="stepper-step active">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Configure &amp; Save</span>
+      </div>
+      <span class="stepper-sublabel">Step 1 of 3</span>
+    </div>
+    <div class="stepper-step">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Dry Run</span>
+      </div>
+      <span class="stepper-sublabel">Step 2 of 3</span>
+    </div>
+    <div class="stepper-step">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Set Validator</span>
+      </div>
+      <span class="stepper-sublabel">Step 3 of 3</span>
+    </div>
+  </div>
+
+  <!-- Card 1: Benefit / Product -->
+  <div class="form-card">
+    <div class="form-section">
+      <div class="form-block">
+        <div class="form-block-title">Start with a Benefit or Product</div>
+        <div class="form-block-desc">Choose the benefit or product you want to configure eligibility rules for</div>
+      </div>
+      <div class="form-right">
+        <div class="select-wrap" id="benefit-select-wrap">
+          <div class="select-label">Select Benefit <span class="asterisk">✱</span></div>
+          <div class="select-control" id="benefit-control" onclick="toggleDropdown('benefit')">
+            <span class="select-placeholder" id="benefit-placeholder">Placeholder</span>
+            <span class="select-value-display" id="benefit-value" style="display:none"></span>
+            <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="dropdown-menu" id="benefit-dropdown">
+            <div class="dropdown-item" onclick="selectBenefit('Student Loan Employer Contributions')">Student Loan Employer Contributions</div>
+            <div class="dropdown-item" onclick="selectBenefit('529 College Savings Plan')">529 College Savings Plan</div>
+            <div class="dropdown-item" onclick="selectBenefit('Health Savings Account (HSA)')">Health Savings Account (HSA)</div>
+            <div class="dropdown-item" onclick="selectBenefit('Dependent Care FSA')">Dependent Care FSA</div>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item" onclick="selectBenefit('Other Benefit')">Other Benefit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Eligibility Variables + dynamic Rule cards -->
+  <div class="form-card" style="gap:12px;">
+    <!-- Header row: title + description above the select -->
+    <div>
+      <div class="form-block-title" style="margin-bottom:4px;">Eligibility Variables</div>
+      <div class="form-block-desc">Choose the benefit or product you want to configure eligibility rules for</div>
+    </div>
+
+    <!-- Multi-select for variables -->
+    <div class="select-wrap" id="vars-select-wrap">
+      <div class="select-label">Eligibility variables</div>
+      <div class="select-control" id="vars-control" onclick="toggleDropdown('vars')">
+        <div class="tags-wrap" id="vars-tags">
+          <span class="select-placeholder" id="vars-placeholder">Select variables...</span>
+        </div>
+        <svg class="select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="dropdown-menu" id="vars-dropdown">
+        <label class="checkbox-item">
+          <input type="checkbox" value="Employment Type" onchange="toggleVar(this)" /> Employment Type
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="Hire date" onchange="toggleVar(this)" /> Hire date
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="Benefit duration cap" onchange="toggleVar(this)" /> Benefit duration cap
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="Lifetime payout cap" onchange="toggleVar(this)" /> Lifetime payout cap
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="Hours per week" onchange="toggleVar(this)" /> Hours per week
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" value="Location / State" onchange="toggleVar(this)" /> Location / State
+        </label>
+      </div>
+    </div>
+
+    <!-- Rule cards rendered here dynamically -->
+    <div id="rules-area" class="rules-area"></div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-ghost" onclick="navigate('screen-landing')">Back</button>
+    <button class="btn btn-primary" onclick="goToStep2()">Next</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ SCREEN 2: DRY RUN ═══════════════════════════ -->
+<div class="screen" id="screen-step2">
+  <header class="header">
+    <div class="header-left">
+      <button class="header-action-btn">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
+        Menu
+      </button>
+    </div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="step-header">
+    <div class="step-title-block">
+      <h1>Eligibility Validator</h1>
+      <p>Automate eligibility checks and benefit calculations across employee programs</p>
+    </div>
+    <div class="policy-badge">
+      <div class="policy-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2L3.5 4.5V10C3.5 13.5 6.25 16.75 10 17.5C13.75 16.75 16.5 13.5 16.5 10V4.5L10 2ZM8.5 13L5.5 10L6.91 8.59L8.5 10.17L13.09 5.58L14.5 7L8.5 13Z" fill="#027A42"/></svg>
+      </div>
+      <span class="policy-text">Your data is protected by our <strong>security policy</strong></span>
+      <svg class="policy-ext-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="stepper-step done">
+      <div class="stepper-base">
+        <div class="stepper-check">
+          <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stepper-label" style="color: var(--brand-blue);">Configure &amp; Save</span>
+      </div>
+      <span class="stepper-sublabel">Completed</span>
+    </div>
+    <div class="stepper-step active">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Dry Run</span>
+      </div>
+      <span class="stepper-sublabel">Step 2 of 3</span>
+    </div>
+    <div class="stepper-step">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Set Validator</span>
+      </div>
+      <span class="stepper-sublabel">Step 3 of 3</span>
+    </div>
+  </div>
+
+  <!-- Dry Run Info -->
+  <div class="dry-run-info">
+    <h2>Dry Run Results</h2>
+    <p>Review the results of your eligibility simulation before activating. Download the report to inspect individual records.</p>
+
+    <div class="dry-run-grid">
+      <div class="dry-run-card">
+        <div class="dry-run-badge success">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" fill="#027A42"/><path d="M3.5 6L5 7.5L8.5 4" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Eligible
+        </div>
+        <div class="dry-run-card-label">Employees Eligible</div>
+        <div class="dry-run-card-value">1,284</div>
+        <div class="dry-run-card-sub">94.3% of total workforce</div>
+      </div>
+      <div class="dry-run-card warning">
+        <div class="dry-run-badge warning">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L11 10H1L6 1Z" fill="#C27400"/><path d="M6 5V7" stroke="white" stroke-width="1.2" stroke-linecap="round"/><circle cx="6" cy="8.5" r="0.5" fill="white"/></svg>
+          Flagged
+        </div>
+        <div class="dry-run-card-label">Flagged Records</div>
+        <div class="dry-run-card-value">78</div>
+        <div class="dry-run-card-sub">5.7% require review</div>
+      </div>
+      <div class="dry-run-card">
+        <div class="dry-run-card-label">Total Records Processed</div>
+        <div class="dry-run-card-value">1,362</div>
+        <div class="dry-run-card-sub">Processed <span style="color:var(--text-secondary)">Feb 22, 2026 · 10:14 AM</span></div>
+      </div>
+      <div class="dry-run-card">
+        <div class="dry-run-card-label">Rules Applied</div>
+        <div class="dry-run-card-value">3</div>
+        <div class="dry-run-card-sub" id="dry-run-vars-summary">Employment Type · Hire date · …</div>
+      </div>
+    </div>
+
+    <button class="download-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Full Report (.xlsx)
+    </button>
+  </div>
+
+  <div class="alert alert-info" style="margin-top:16px">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Review flagged records in the report. You can edit your eligibility rules and re-run if needed before activating the validator.
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-ghost" onclick="navigate('screen-step1')">Back</button>
+    <button class="btn btn-outline" onclick="runDryRun()">Re-run Dry Run</button>
+    <button class="btn btn-primary" onclick="navigate('screen-step3')">Next</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ SCREEN 3: SET VALIDATOR ═══════════════════════════ -->
+<div class="screen" id="screen-step3">
+  <header class="header">
+    <div class="header-left">
+      <button class="header-action-btn">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
+        Menu
+      </button>
+    </div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="step-header">
+    <div class="step-title-block">
+      <h1>Eligibility Validator</h1>
+      <p>Automate eligibility checks and benefit calculations across employee programs</p>
+    </div>
+    <div class="policy-badge">
+      <div class="policy-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2L3.5 4.5V10C3.5 13.5 6.25 16.75 10 17.5C13.75 16.75 16.5 13.5 16.5 10V4.5L10 2ZM8.5 13L5.5 10L6.91 8.59L8.5 10.17L13.09 5.58L14.5 7L8.5 13Z" fill="#027A42"/></svg>
+      </div>
+      <span class="policy-text">Your data is protected by our <strong>security policy</strong></span>
+      <svg class="policy-ext-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="stepper-step done">
+      <div class="stepper-base">
+        <div class="stepper-check">
+          <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stepper-label" style="color: var(--brand-blue);">Configure &amp; Save</span>
+      </div>
+      <span class="stepper-sublabel">Completed</span>
+    </div>
+    <div class="stepper-step done">
+      <div class="stepper-base">
+        <div class="stepper-check">
+          <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stepper-label" style="color: var(--brand-blue);">Dry Run</span>
+      </div>
+      <span class="stepper-sublabel">Completed</span>
+    </div>
+    <div class="stepper-step active">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Set Validator</span>
+      </div>
+      <span class="stepper-sublabel">Step 3 of 3</span>
+    </div>
+  </div>
+
+  <!-- Confirmation Card -->
+  <div class="confirm-card">
+    <div>
+      <div class="confirm-section-title">Validator Summary</div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Benefit / Product</span>
+        <span class="confirm-row-value" id="confirm-benefit">Student Loan Employer Contributions</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Eligibility Variables</span>
+        <span class="confirm-row-value" id="confirm-vars">Employment Type, Hire date</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Dry Run Status</span>
+        <span class="confirm-row-value">
+          <span class="confirm-active-badge">
+            <span class="confirm-active-dot"></span>
+            Passed — 1,284 eligible, 78 flagged
+          </span>
+        </span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Active Rules</span>
+        <span class="confirm-row-value" id="confirm-rule-count">3</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Replacing</span>
+        <span class="confirm-row-value">Student Loan Repayment Validator 05</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-row-label">Next cycle</span>
+        <span class="confirm-row-value">March 01, 2026</span>
+      </div>
+    </div>
+    <div class="helper-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" flex-shrink="0" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div>
+        <strong>Activating this validator will replace the current active configuration.</strong><br/>
+        In-flight validations will complete under existing rules. New validations will use the updated eligibility settings starting <strong>March 01, 2026</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-ghost" onclick="navigate('screen-step2')">Back</button>
+    <button class="btn btn-primary" onclick="activate()">Activate Validator</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ SCREEN 4: SUCCESS ═══════════════════════════ -->
+<div class="screen" id="screen-success">
+  <header class="header">
+    <div class="header-left"></div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right"></div>
+  </header>
+  <div class="success-screen">
+    <div class="success-icon-circle">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#E6FAEE"/><path d="M12 20L17 25L28 14" stroke="#027A42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>Validator Activated!</h2>
+    <p>Your eligibility validator for <strong id="success-benefit">Student Loan Employer Contributions</strong> is now live. Eligibility checks will begin running on your next cycle — <strong>March 01, 2026</strong>.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <button class="btn btn-outline" onclick="navigate('screen-landing')">Back to Home</button>
+      <button class="btn btn-primary" onclick="navigate('screen-step1')">Create Another Validator</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  /* ══════════════════════════════════════════════════
+     STATE
+  ══════════════════════════════════════════════════ */
+  let selectedBenefit = '';
+  let selectedVars    = [];          // ordered list of selected variable names
+  let benefitDropdownOpen = false;
+  let varsDropdownOpen    = false;
+
+  /* Per-rule state: keyed by variable name */
+  const ruleState = {};
+
+  /* Default options per variable type */
+  const VARIABLE_OPTIONS = {
+    'Employment Type':      ['Full time', 'Part time', 'Contract', 'Intern'],
+    'Hire date':            ['< 30 days', '30–90 days', '91–180 days', '> 180 days'],
+    'Benefit duration cap': ['6 months', '12 months', '24 months', 'Unlimited'],
+    'Lifetime payout cap':  ['$5,000', '$10,000', '$25,000', 'Unlimited'],
+    'Hours per week':       ['< 20 hrs', '20–30 hrs', '30–40 hrs', '> 40 hrs'],
+    'Location / State':     ['CA', 'NY', 'TX', 'FL', 'All states'],
+  };
+
+  const AMOUNT_OPTIONS = ['$100', '$150', '$200', '$250', '$300', '$500'];
+
+  /* ══════════════════════════════════════════════════
+     NAVIGATION
+  ══════════════════════════════════════════════════ */
+  function navigate(screenId) {
+    if (screenId === 'screen-step3') showConfirmation();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+    closeAllDropdowns();
+  }
+
+  /* ══════════════════════════════════════════════════
+     FAQ
+  ══════════════════════════════════════════════════ */
+  function toggleFaq(item) { item.classList.toggle('open'); }
+
+  /* ══════════════════════════════════════════════════
+     BENEFIT DROPDOWN
+  ══════════════════════════════════════════════════ */
+  function toggleDropdown(type) {
+    if (type === 'benefit') {
+      benefitDropdownOpen = !benefitDropdownOpen;
+      document.getElementById('benefit-dropdown').classList.toggle('open', benefitDropdownOpen);
+      document.getElementById('benefit-control').classList.toggle('open', benefitDropdownOpen);
+      if (varsDropdownOpen) closeDropdown('vars');
+    } else if (type === 'vars') {
+      varsDropdownOpen = !varsDropdownOpen;
+      document.getElementById('vars-dropdown').classList.toggle('open', varsDropdownOpen);
+      document.getElementById('vars-control').classList.toggle('open', varsDropdownOpen);
+      if (benefitDropdownOpen) closeDropdown('benefit');
+    }
+  }
+
+  function closeDropdown(type) {
+    if (type === 'benefit') {
+      benefitDropdownOpen = false;
+      document.getElementById('benefit-dropdown').classList.remove('open');
+      document.getElementById('benefit-control').classList.remove('open');
+    } else {
+      varsDropdownOpen = false;
+      document.getElementById('vars-dropdown').classList.remove('open');
+      document.getElementById('vars-control').classList.remove('open');
+    }
+  }
+
+  function closeAllDropdowns() {
+    closeDropdown('benefit');
+    closeDropdown('vars');
+  }
+
+  function selectBenefit(value) {
+    selectedBenefit = value;
+    document.getElementById('benefit-placeholder').style.display = 'none';
+    const v = document.getElementById('benefit-value');
+    v.style.display = 'block';
+    v.textContent = value;
+    document.getElementById('benefit-control').classList.add('has-value');
+    closeDropdown('benefit');
+  }
+
+  /* ══════════════════════════════════════════════════
+     ELIGIBILITY VARIABLES MULTI-SELECT
+  ══════════════════════════════════════════════════ */
+  function toggleVar(checkbox) {
+    const val = checkbox.value;
+    if (checkbox.checked) {
+      if (!selectedVars.includes(val)) {
+        selectedVars.push(val);
+        // initialise rule state for this variable
+        if (!ruleState[val]) {
+          ruleState[val] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+        }
+      }
+    } else {
+      selectedVars = selectedVars.filter(v => v !== val);
+    }
+    renderTags();
+    renderRules();
+  }
+
+  function removeTag(val) {
+    selectedVars = selectedVars.filter(v => v !== val);
+    document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
+      if (cb.value === val) cb.checked = false;
+    });
+    renderTags();
+    renderRules();
+  }
+
+  function renderTags() {
+    const wrap = document.getElementById('vars-tags');
+    if (selectedVars.length === 0) {
+      wrap.innerHTML = '<span class="select-placeholder" id="vars-placeholder">Select variables...</span>';
+      return;
+    }
+    wrap.innerHTML = selectedVars.map(v => {
+      const safe = v.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      return `<span class="tag">${v}
+        <span class="tag-remove" onclick="event.stopPropagation();removeTag('${safe}')">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <circle cx="5" cy="5" r="4.5" stroke="currentColor"/>
+            <path d="M3.5 3.5L6.5 6.5M6.5 3.5L3.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </span>`;
+    }).join('');
+  }
+
+  /* ══════════════════════════════════════════════════
+     RULE CARD RENDERING
+  ══════════════════════════════════════════════════ */
+  function renderRules() {
+    const area = document.getElementById('rules-area');
+    // Remove existing rule cards (but not the "add another" button — we'll re-add it)
+    area.innerHTML = '';
+
+    selectedVars.forEach((varName, idx) => {
+      const state = ruleState[varName] || { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+      const ruleNum = idx + 1;
+      const safe = varName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+      // Build condition options for this variable
+      const condOpts = (VARIABLE_OPTIONS[varName] || ['Option A', 'Option B', 'Option C'])
+        .map(o => `<option value="${o}" ${state.conditionValue === o ? 'selected' : ''}>${o}</option>`)
+        .join('');
+
+      // Build amount options
+      const amtOpts = AMOUNT_OPTIONS
+        .map(o => `<option value="${o}" ${state.amountValue === o ? 'selected' : ''}>${o}</option>`)
+        .join('');
+
+      // Rule summary text
+      const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
+      const amtLabel  = state.amountValue || '$200';
+      const summaryText = buildSummary(varName, condLabel, state.activeToggle, amtLabel);
+
+      const card = document.createElement('div');
+      card.className = 'rule-card';
+      card.id = `rule-card-${ruleNum}`;
+      card.innerHTML = `
+        <!-- Rule header: badge + delete -->
+        <div class="rule-header">
+          <div class="rule-badge">
+            <svg class="rule-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+            Rule ${ruleNum}
+          </div>
+          <button class="rule-delete-btn" onclick="deleteRule('${safe}')" title="Remove rule">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- IF label -->
+        <div class="rule-if-label">IF (select conditions)</div>
+
+        <!-- Condition box -->
+        <div class="rule-condition-box">
+          <!-- Variable checkbox (checked, read-only — the variable is already selected) -->
+          <div class="rule-condition-variable">
+            <input type="checkbox" checked disabled />
+            <span>${varName}</span>
+          </div>
+
+          <!-- Condition value select -->
+          <div class="rule-select-wrap">
+            <span class="rule-select-label">Type</span>
+            <select class="rule-select"
+              onchange="updateRuleCondition('${safe}', this.value)">
+              ${condOpts}
+            </select>
+            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- THEN section -->
+        <div class="rule-then-area">
+          <div class="rule-then-label">THEN</div>
+          <div class="rule-then-inner">
+            <!-- Flat / Tiers toggle -->
+            <div class="toggle-group">
+              <button class="toggle-btn ${state.activeToggle === 'Flat' ? 'active' : ''}"
+                onclick="setToggle('${safe}', 'Flat', this)">
+                ${state.activeToggle === 'Flat' ? `<svg class="toggle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+                Flat
+              </button>
+              <button class="toggle-btn ${state.activeToggle === 'Tiers' ? 'active' : ''}"
+                onclick="setToggle('${safe}', 'Tiers', this)">
+                ${state.activeToggle === 'Tiers' ? `<svg class="toggle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+                Tiers
+              </button>
+            </div>
+
+            <!-- Provide repayment row -->
+            <div class="rule-then-row">
+              <span>Provide repayment of</span>
+              <div class="rule-select-wrap">
+                <span class="rule-select-label">Amount</span>
+                <select class="rule-select" style="min-width:130px;"
+                  onchange="updateRuleAmount('${safe}', this.value)">
+                  ${amtOpts}
+                </select>
+                <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+              <span>[per month]</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule Summary -->
+        <div class="rule-summary" id="rule-summary-${ruleNum}">
+          <div class="rule-summary-label">Rule Summary</div>
+          <div class="rule-summary-text">${summaryText}</div>
+        </div>
+      `;
+      area.appendChild(card);
+    });
+
+    // "Add another Rule" button (only shown when at least one variable is selected)
+    if (selectedVars.length > 0) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-rule-btn';
+      addBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add another Rule
+      `;
+      addBtn.onclick = openVarsDropdown;
+      area.appendChild(addBtn);
+    }
+  }
+
+  function buildSummary(varName, condVal, toggle, amount) {
+    const prefix = toggle === 'Flat' ? 'All' : 'Tiered:';
+    return `${prefix} ${condVal} ${varName.toLowerCase()} employees get ${amount} per month`;
+  }
+
+  /* ─── Update handlers called from inline selects ─── */
+  function updateRuleCondition(varName, value) {
+    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+    ruleState[varName].conditionValue = value;
+    refreshRuleSummary(varName);
+  }
+
+  function updateRuleAmount(varName, value) {
+    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+    ruleState[varName].amountValue = value;
+    refreshRuleSummary(varName);
+  }
+
+  function setToggle(varName, label, btn) {
+    if (!ruleState[varName]) ruleState[varName] = { activeToggle: 'Flat', conditionValue: '', amountValue: '' };
+    ruleState[varName].activeToggle = label;
+    // Re-render only the toggle group inside this card without full re-render
+    const card = btn.closest('.rule-card');
+    card.querySelectorAll('.toggle-btn').forEach(b => {
+      const isActive = b.textContent.trim().replace(/\s+/g, ' ').startsWith(label.charAt(0));
+      // simpler: compare data
+    });
+    // Full re-render to keep things consistent
+    renderRules();
+  }
+
+  function refreshRuleSummary(varName) {
+    const state = ruleState[varName];
+    const idx = selectedVars.indexOf(varName);
+    if (idx === -1) return;
+    const ruleNum = idx + 1;
+    const summaryEl = document.getElementById(`rule-summary-${ruleNum}`);
+    if (!summaryEl) return;
+    const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
+    const amtLabel  = state.amountValue || '$200';
+    summaryEl.querySelector('.rule-summary-text').textContent =
+      buildSummary(varName, condLabel, state.activeToggle, amtLabel);
+  }
+
+  function deleteRule(varName) {
+    selectedVars = selectedVars.filter(v => v !== varName);
+    // Uncheck the checkbox in the vars dropdown
+    document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
+      if (cb.value === varName) cb.checked = false;
+    });
+    renderTags();
+    renderRules();
+  }
+
+  function openVarsDropdown() {
+    varsDropdownOpen = true;
+    document.getElementById('vars-dropdown').classList.add('open');
+    document.getElementById('vars-control').classList.add('open');
+  }
+
+  /* ══════════════════════════════════════════════════
+     STEP 2: DRY RUN
+  ══════════════════════════════════════════════════ */
+  function goToStep2() {
+    if (selectedVars.length > 0) {
+      const summary = selectedVars.slice(0, 3).join(' · ') + (selectedVars.length > 3 ? ' · …' : '');
+      document.getElementById('dry-run-vars-summary').textContent = summary;
+      document.getElementById('dry-run-rule-count').textContent = selectedVars.length;
+    }
+    navigate('screen-step2');
+  }
+
+  function runDryRun() {
+    const btn = event.target;
+    const original = btn.textContent;
+    btn.textContent = 'Running…';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1800);
+  }
+
+  /* ══════════════════════════════════════════════════
+     STEP 3: CONFIRMATION
+  ══════════════════════════════════════════════════ */
+  function showConfirmation() {
+    document.getElementById('confirm-benefit').textContent =
+      selectedBenefit || 'Student Loan Employer Contributions';
+    document.getElementById('confirm-vars').textContent =
+      selectedVars.length > 0 ? selectedVars.join(', ') : 'Employment Type, Hire date';
+    document.getElementById('confirm-rule-count').textContent =
+      selectedVars.length || 1;
+  }
+
+  /* ══════════════════════════════════════════════════
+     ACTIVATE
+  ══════════════════════════════════════════════════ */
+  function activate() {
+    document.getElementById('success-benefit').textContent =
+      selectedBenefit || 'Student Loan Employer Contributions';
+    navigate('screen-success');
+  }
+
+  /* ══════════════════════════════════════════════════
+     MISC
+  ══════════════════════════════════════════════════ */
+  function showValidatorsList() {
+    alert('Existing Validators list coming soon!');
+  }
+
+  /* ─── Global click-outside to close dropdowns ─── */
+  document.addEventListener('click', function(e) {
+    const bWrap = document.getElementById('benefit-select-wrap');
+    const vWrap = document.getElementById('vars-select-wrap');
+    if (benefitDropdownOpen && bWrap && !bWrap.contains(e.target)) closeDropdown('benefit');
+    if (varsDropdownOpen   && vWrap && !vWrap.contains(e.target))   closeDropdown('vars');
+  });
+</script>
+</body>
+</html>
