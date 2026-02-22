@@ -615,6 +615,12 @@
       justify-content: space-between;
       min-height: 32px;
     }
+    .review-benefit-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-right: 10px;
+    }
     .review-name-badge {
       display: inline-flex;
       align-items: center;
@@ -1704,6 +1710,12 @@
         <div class="review-name-badge" id="review-validator-name">—</div>
       </div>
 
+      <!-- Benefit badge -->
+      <div class="review-name-row">
+        <div class="review-benefit-label">Benefit / Product</div>
+        <div class="review-name-badge" id="review-benefit-name" style="border-color: var(--brand-blue); color: var(--brand-blue); background: var(--brand-blue-light);">—</div>
+      </div>
+
       <!-- Rule summary cards -->
       <div id="review-rules-list"></div>
     </div>
@@ -2380,6 +2392,10 @@
     // Populate validator name badge
     const nameEl = document.getElementById('review-validator-name');
     if (nameEl) nameEl.textContent = validatorName.trim() || 'Unnamed Validator';
+
+    // Populate benefit badge
+    const benefitEl = document.getElementById('review-benefit-name');
+    if (benefitEl) benefitEl.textContent = selectedBenefit || '—';
 
     // Populate rule summary cards
     const listEl = document.getElementById('review-rules-list');
