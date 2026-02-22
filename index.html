@@ -1079,6 +1079,96 @@
     .rule-amount-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .rule-amount-input[type=number] { -moz-appearance: textfield; }
 
+    /* ── Multi-condition blocks inside IF box ── */
+    .condition-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .condition-block-inner {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .condition-fields-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 10px;
+      flex: 1;
+    }
+
+    /* ×  button to remove an individual condition */
+    .cond-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      margin-top: 12px;   /* optical alignment with inputs */
+      flex-shrink: 0;
+      transition: color 0.15s, background 0.15s;
+    }
+    .cond-delete-btn:hover { color: #b81626; background: #fff0f0; }
+
+    /* AND / OR connector row */
+    .connector-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+    }
+    .connector-pill {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      border: 1.5px solid;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .connector-and {
+      background: #EFF4FF;
+      color: var(--brand-blue);
+      border-color: var(--brand-blue);
+    }
+    .connector-and:hover { background: #dce8ff; }
+    .connector-or {
+      background: #FFF7E6;
+      color: #C27400;
+      border-color: #C27400;
+    }
+    .connector-or:hover { background: #ffefc5; }
+    .connector-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-base);
+    }
+
+    /* "+ Add condition" link-style button */
+    .add-condition-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--brand-blue);
+      padding: 6px 0 2px;
+      transition: opacity 0.15s;
+    }
+    .add-condition-btn:hover { opacity: 0.75; }
+    .add-condition-btn svg { flex-shrink: 0; }
+
     /* Compound row (operator + number + duration) */
     .rule-compound-row {
       display: flex;
@@ -1897,8 +1987,8 @@
       }
     } else {
       selectedVars = selectedVars.filter(v => v !== val);
-      // Remove all rule cards that use this variable
-      rules = rules.filter(r => r.varName !== val);
+      // Remove rule cards whose first condition matches this variable
+      rules = rules.filter(r => !(r.conditions.length === 1 && r.conditions[0].varName === val));
       renderRules();
     }
     renderTags();
@@ -1909,7 +1999,7 @@
     document.querySelectorAll('#vars-dropdown input[type="checkbox"]').forEach(cb => {
       if (cb.value === val) cb.checked = false;
     });
-    rules = rules.filter(r => r.varName !== val);
+    rules = rules.filter(r => !(r.conditions.length === 1 && r.conditions[0].varName === val));
     renderTags();
     renderRules();
   }
@@ -1935,9 +2025,25 @@
 
   /* ══════════════════════════════════════════════════
      RULE MANAGEMENT
+     Each rule now has:
+       conditions[] — array of condition objects, one per variable
+       connector    — 'AND' | 'OR' (shared across all conditions in this rule)
+       amountValue  — the THEN repayment amount
   ══════════════════════════════════════════════════ */
+
+  let nextCondId = 1; // separate id counter for conditions
+
+  function blankCondition(varName) {
+    return { cid: nextCondId++, varName: varName || ALL_VARIABLE_NAMES[0], conditionValue: '', operator: '', number: '', duration: '' };
+  }
+
   function blankRule(varName) {
-    return { id: nextRuleId++, varName, conditionValue: '', operator: '', number: '', duration: '', amountValue: '' };
+    return {
+      id: nextRuleId++,
+      conditions: [ blankCondition(varName || ALL_VARIABLE_NAMES[0]) ],
+      connector: 'AND',
+      amountValue: ''
+    };
   }
 
   function addRuleForVar(varName) {
@@ -1956,124 +2062,207 @@
     renderRules();
   }
 
-  function updateRuleVar(id, varName) {
-    const rule = rules.find(r => r.id === id);
+  /* Add a new condition block inside an existing rule */
+  function addConditionToRule(ruleId) {
+    const rule = rules.find(r => r.id === ruleId);
     if (!rule) return;
-    Object.assign(rule, blankRule(varName));
-    rule.id = id;   // restore original id
+    rule.conditions.push(blankCondition());
     renderRules();
   }
 
-  /* select-type variables */
-  function updateRuleCondition(id, value) {
-    const rule = rules.find(r => r.id === id);
-    if (rule) { rule.conditionValue = value; refreshRuleSummaryById(id); }
+  /* Remove one condition from a rule (min 1 kept) */
+  function deleteCondition(ruleId, cid) {
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule || rule.conditions.length <= 1) return;
+    rule.conditions = rule.conditions.filter(c => c.cid !== cid);
+    renderRules();
   }
 
-  /* compound-type variables */
-  function updateRuleOperator(id, value) {
-    const rule = rules.find(r => r.id === id);
-    if (rule) { rule.operator = value; refreshRuleSummaryById(id); }
-  }
-  function updateRuleNumber(id, value) {
-    const rule = rules.find(r => r.id === id);
-    if (rule) { rule.number = value; refreshRuleSummaryById(id); }
-  }
-  function updateRuleDuration(id, value) {
-    const rule = rules.find(r => r.id === id);
-    if (rule) { rule.duration = value; refreshRuleSummaryById(id); }
+  /* Swap connector AND ↔ OR */
+  function toggleConnector(ruleId) {
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule) return;
+    rule.connector = rule.connector === 'AND' ? 'OR' : 'AND';
+    renderRules();
   }
 
-  function updateRuleAmount(id, value) {
-    const rule = rules.find(r => r.id === id);
-    if (rule) { rule.amountValue = value ? '$' + value : ''; refreshRuleSummaryById(id); }
+  /* Change variable on a condition — resets its fields */
+  function updateConditionVar(ruleId, cid, varName) {
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule) return;
+    const cond = rule.conditions.find(c => c.cid === cid);
+    if (!cond) return;
+    const newCond = blankCondition(varName);
+    newCond.cid = cond.cid;
+    Object.assign(cond, newCond);
+    renderRules();
+  }
+
+  /* Field-level updates — update state then refresh summary only */
+  function updateConditionValue(ruleId, cid, value) {
+    const cond = getCondition(ruleId, cid);
+    if (cond) { cond.conditionValue = value; refreshRuleSummaryById(ruleId); }
+  }
+  function updateConditionOperator(ruleId, cid, value) {
+    const cond = getCondition(ruleId, cid);
+    if (cond) { cond.operator = value; refreshRuleSummaryById(ruleId); }
+  }
+  function updateConditionNumber(ruleId, cid, value) {
+    const cond = getCondition(ruleId, cid);
+    if (cond) { cond.number = value; refreshRuleSummaryById(ruleId); }
+  }
+  function updateConditionDuration(ruleId, cid, value) {
+    const cond = getCondition(ruleId, cid);
+    if (cond) { cond.duration = value; refreshRuleSummaryById(ruleId); }
+  }
+  function updateRuleAmount(ruleId, value) {
+    const rule = rules.find(r => r.id === ruleId);
+    if (rule) { rule.amountValue = value ? '$' + value : ''; refreshRuleSummaryById(ruleId); }
+  }
+
+  function getCondition(ruleId, cid) {
+    const rule = rules.find(r => r.id === ruleId);
+    return rule ? rule.conditions.find(c => c.cid === cid) : null;
   }
 
   /* ── Summary builders ── */
-  function buildRuleSummary(rule) {
-    const cfg = VARIABLE_CONFIG[rule.varName];
+  function buildConditionSummary(cond) {
+    const cfg = VARIABLE_CONFIG[cond.varName];
     if (!cfg) return '—';
-    const condPart = cfg.summary(rule);
-    const amt = rule.amountValue || '$0';
-    return `${condPart} → repayment of ${amt} per month`;
+    return cfg.summary(cond);
   }
 
-  function refreshRuleSummaryById(id) {
-    const rule = rules.find(r => r.id === id);
+  function buildRuleSummary(rule) {
+    if (!rule.conditions || rule.conditions.length === 0) return '—';
+    const parts = rule.conditions.map(buildConditionSummary);
+    const joined = parts.join(` ${rule.connector} `);
+    const amt = rule.amountValue || '$0';
+    return `IF ${joined} → repayment of ${amt} per month`;
+  }
+
+  function refreshRuleSummaryById(ruleId) {
+    const rule = rules.find(r => r.id === ruleId);
     if (!rule) return;
-    const el = document.getElementById(`rule-summary-${id}`);
+    const el = document.getElementById(`rule-summary-${ruleId}`);
     if (el) el.querySelector('.rule-summary-text').textContent = buildRuleSummary(rule);
   }
 
-  /* ── IF-block HTML builders per variable type ── */
-  function buildIfFields(rule) {
-    const id  = rule.id;
-    const cfg = VARIABLE_CONFIG[rule.varName];
+  /* ── IF-block fields for one condition object ── */
+  function buildConditionFields(ruleId, cond) {
+    const cfg = VARIABLE_CONFIG[cond.varName];
     if (!cfg) return '';
+    const cid = cond.cid;
 
     if (cfg.type === 'select') {
       const opts = ['', ...cfg.options]
         .map(o => o === ''
-          ? `<option value="" disabled ${!rule.conditionValue ? 'selected' : ''}>${cfg.placeholder}</option>`
-          : `<option value="${o}" ${rule.conditionValue === o ? 'selected' : ''}>${o}</option>`)
+          ? `<option value="" disabled ${!cond.conditionValue ? 'selected' : ''}>${cfg.placeholder}</option>`
+          : `<option value="${o}" ${cond.conditionValue === o ? 'selected' : ''}>${o}</option>`)
         .join('');
       return `
         <div class="rule-select-wrap">
-          <span class="rule-select-label">${rule.varName}</span>
-          <select class="rule-select" onchange="updateRuleCondition(${id}, this.value)">
+          <span class="rule-select-label">${cond.varName}</span>
+          <select class="rule-select" onchange="updateConditionValue(${ruleId},${cid},this.value)">
             ${opts}
           </select>
-          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>`;
     }
 
     if (cfg.type === 'compound') {
       const opOpts = ['', ...cfg.operators]
         .map(o => o === ''
-          ? `<option value="" disabled ${!rule.operator ? 'selected' : ''}>Choose condition</option>`
-          : `<option value="${o}" ${rule.operator === o ? 'selected' : ''}>${o}</option>`)
+          ? `<option value="" disabled ${!cond.operator ? 'selected' : ''}>Choose condition</option>`
+          : `<option value="${o}" ${cond.operator === o ? 'selected' : ''}>${o}</option>`)
         .join('');
-
       const durField = cfg.durations && cfg.durations.length > 0 ? `
         <div class="rule-select-wrap">
           <span class="rule-select-label">${cfg.durationLabel}</span>
-          <select class="rule-select" style="min-width:120px" onchange="updateRuleDuration(${id}, this.value)">
-            ${cfg.durations.map(d => `<option value="${d}" ${rule.duration === d ? 'selected' : ''}>${d}</option>`).join('')}
+          <select class="rule-select" style="min-width:110px" onchange="updateConditionDuration(${ruleId},${cid},this.value)">
+            ${cfg.durations.map(d => `<option value="${d}" ${cond.duration === d ? 'selected' : ''}>${d}</option>`).join('')}
           </select>
-          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
+          <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>` : '';
-
       return `
         <div class="rule-compound-row">
           <div class="rule-select-wrap" style="flex:1">
             <span class="rule-select-label">${cfg.operatorLabel}</span>
-            <select class="rule-select" style="min-width:220px;width:100%" onchange="updateRuleOperator(${id}, this.value)">
+            <select class="rule-select" style="min-width:200px;width:100%" onchange="updateConditionOperator(${ruleId},${cid},this.value)">
               ${opOpts}
             </select>
-            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="rule-number-wrap">
             <span class="rule-select-label">${cfg.numberLabel}</span>
-            <input
-              type="number"
-              class="rule-number-input"
-              min="0"
-              placeholder="0"
-              value="${rule.number || ''}"
-              oninput="updateRuleNumber(${id}, this.value)"
-            />
+            <input type="number" class="rule-number-input" min="0" placeholder="0"
+              value="${cond.number || ''}"
+              oninput="updateConditionNumber(${ruleId},${cid},this.value)" />
           </div>
           ${durField}
         </div>`;
     }
-
     return '';
+  }
+
+  /* ── Build the full IF block for a rule (all conditions + connectors) ── */
+  function buildIfBlock(rule) {
+    const ruleId = rule.id;
+    let html = '';
+
+    rule.conditions.forEach((cond, idx) => {
+      const isLast = idx === rule.conditions.length - 1;
+      const canDelete = rule.conditions.length > 1;
+
+      // Variable selector for this condition
+      const varOpts = ALL_VARIABLE_NAMES
+        .map(v => `<option value="${v}" ${cond.varName === v ? 'selected' : ''}>${v}</option>`)
+        .join('');
+
+      html += `
+        <div class="condition-block" id="cond-${cond.cid}">
+          <div class="condition-block-inner">
+            <div class="condition-fields-row">
+              <div class="rule-select-wrap">
+                <span class="rule-select-label">Variable</span>
+                <select class="rule-select" onchange="updateConditionVar(${ruleId},${cond.cid},this.value)">
+                  ${varOpts}
+                </select>
+                <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              ${buildConditionFields(ruleId, cond)}
+            </div>
+            ${canDelete ? `
+              <button class="cond-delete-btn" onclick="deleteCondition(${ruleId},${cond.cid})" title="Remove condition">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>` : ''}
+          </div>
+        </div>`;
+
+      // Connector pill between conditions (not after the last one)
+      if (!isLast) {
+        html += `
+          <div class="connector-row">
+            <button class="connector-pill connector-${rule.connector.toLowerCase()}"
+              onclick="toggleConnector(${ruleId})" title="Click to switch AND / OR">
+              ${rule.connector}
+            </button>
+            <div class="connector-line"></div>
+          </div>`;
+      }
+    });
+
+    // "+ Add condition" link
+    html += `
+      <button class="add-condition-btn" onclick="addConditionToRule(${ruleId})">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add condition
+      </button>`;
+
+    return html;
   }
 
   /* ══════════════════════════════════════════════════
@@ -2084,12 +2273,9 @@
     area.innerHTML = '';
 
     rules.forEach((rule, idx) => {
-      const ruleNum  = idx + 1;
-      const id       = rule.id;
-      const varOpts  = ALL_VARIABLE_NAMES
-        .map(v => `<option value="${v}" ${rule.varName === v ? 'selected' : ''}>${v}</option>`)
-        .join('');
-      const amountRaw   = rule.amountValue ? rule.amountValue.replace(/[^0-9.]/g, '') : '';
+      const ruleNum   = idx + 1;
+      const id        = rule.id;
+      const amountRaw = rule.amountValue ? rule.amountValue.replace(/[^0-9.]/g, '') : '';
       const summaryText = buildRuleSummary(rule);
 
       const card = document.createElement('div');
@@ -2114,18 +2300,7 @@
         <div class="rule-if-label">IF (select conditions)</div>
 
         <div class="rule-condition-box">
-          <!-- Variable selector -->
-          <div class="rule-select-wrap">
-            <span class="rule-select-label">Variable</span>
-            <select class="rule-select" onchange="updateRuleVar(${id}, this.value)">
-              ${varOpts}
-            </select>
-            <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
-          <!-- Variable-specific condition fields -->
-          ${buildIfFields(rule)}
+          ${buildIfBlock(rule)}
         </div>
 
         <div class="rule-then-area">
@@ -2136,14 +2311,9 @@
               <div class="rule-amount-wrap">
                 <span class="rule-select-label">Amount</span>
                 <span class="rule-amount-prefix">$</span>
-                <input
-                  type="number"
-                  class="rule-amount-input"
-                  min="0"
-                  placeholder="0"
+                <input type="number" class="rule-amount-input" min="0" placeholder="0"
                   value="${amountRaw}"
-                  oninput="updateRuleAmount(${id}, this.value)"
-                />
+                  oninput="updateRuleAmount(${id}, this.value)" />
               </div>
               <span>per month</span>
             </div>
