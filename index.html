@@ -800,6 +800,98 @@
     }
     .download-btn:hover { background: var(--surface-base); }
 
+    /* ── Dry Run Complete screen ── */
+    .drc-seal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+    .drc-completed-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-bg);
+      color: var(--text-success);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .drc-completed-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-success);
+      flex-shrink: 0;
+    }
+    .drc-download-card {
+      border: 1.5px solid #16B76C;
+      border-radius: var(--radius-lg);
+      background: var(--success-bg);
+      padding: 20px 24px;
+      width: 100%;
+    }
+    .drc-download-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .drc-file-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface-overlay);
+      border: 1px solid #16B76C;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .drc-file-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .drc-file-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .drc-file-size {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .drc-download-btn {
+      flex-shrink: 0;
+      font-size: 14px;
+      padding: 10px 20px;
+      min-height: 40px;
+    }
+    .drc-rule-card {
+      background: var(--surface-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 8px;
+    }
+    .drc-rule-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .drc-rule-text {
+      font-size: 14px;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
     /* ───── ACTIVATION / CONFIRMATION SCREEN ───── */
     .confirm-card {
       background: var(--surface-overlay);
@@ -1946,6 +2038,149 @@
 </div>
 
 
+<!-- ═══════════════════════ SCREEN 2C: DRY RUN COMPLETE ═══════════════════════ -->
+<div class="screen" id="screen-dry-run-complete">
+  <header class="header">
+    <div class="header-left">
+      <button class="header-action-btn">
+        <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
+        Menu
+      </button>
+    </div>
+    <div class="header-center logo-container">
+      <div class="logo-mark">
+        <div class="logo-symbol">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1L13 4.5V10L7 13.5L1 10V4.5L7 1Z" fill="white" opacity="0.9"/></svg>
+        </div>
+        <span class="logo-text">candidly</span>
+      </div>
+      <div class="logo-dot"></div>
+      <div class="partner-logo">
+        <div class="partner-icon">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L10.33 3.5V8.5L6 11L1.67 8.5V3.5L6 1Z" fill="white"/></svg>
+        </div>
+        <span>TechValue</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="header-action-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="step-header">
+    <div class="step-title-block">
+      <h1>Eligibility Validator</h1>
+      <p>Automate eligibility checks and benefit calculations across employee programs</p>
+    </div>
+    <div class="policy-badge">
+      <div class="policy-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 2L3.5 4.5V10C3.5 13.5 6.25 16.75 10 17.5C13.75 16.75 16.5 13.5 16.5 10V4.5L10 2ZM8.5 13L5.5 10L6.91 8.59L8.5 10.17L13.09 5.58L14.5 7L8.5 13Z" fill="#027A42"/></svg>
+      </div>
+      <span class="policy-text">Your data is protected by our <strong>security policy</strong></span>
+      <svg class="policy-ext-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    </div>
+  </div>
+
+  <!-- Stepper: step 1 done, step 2 active (still in review phase) -->
+  <div class="stepper">
+    <div class="stepper-step done">
+      <div class="stepper-base">
+        <div class="stepper-check">
+          <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="stepper-label" style="color: var(--brand-blue);">Configure &amp; Save</span>
+      </div>
+      <span class="stepper-sublabel">Completed</span>
+    </div>
+    <div class="stepper-step active">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Review &amp; Confirm</span>
+      </div>
+      <span class="stepper-sublabel">Step 2 of 3</span>
+    </div>
+    <div class="stepper-step">
+      <div class="stepper-base">
+        <div class="stepper-dot"></div>
+        <span class="stepper-label">Set Validator</span>
+      </div>
+      <span class="stepper-sublabel">Step 3 of 3</span>
+    </div>
+  </div>
+
+  <!-- Dry Run Complete card -->
+  <div class="form-card" style="gap:24px;">
+
+    <!-- Green check seal icon -->
+    <div class="drc-seal">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="23" fill="#E6FAEE" stroke="#16B76C" stroke-width="2"/>
+        <path d="M14 24.5L20.5 31L34 17" stroke="#027A42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <!-- Heading + description -->
+    <div>
+      <div class="form-block-title" style="font-size:20px;">Dry Run Complete. Ready for review</div>
+      <div class="form-block-desc" style="margin-top:6px; max-width:600px;">Before activating the validator, you must download and review the results CSV. Confirm that the file reflects your entire employee population — all names, IDs, and benefit details.</div>
+    </div>
+
+    <!-- CSV Download card -->
+    <div class="drc-download-card">
+      <div class="drc-download-card-inner">
+        <!-- CSV file icon -->
+        <div class="drc-file-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#027A42" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="drc-file-info">
+          <div class="drc-file-name">Repayment Validator.CSV</div>
+          <div class="drc-file-size">2.15 KB</div>
+        </div>
+        <button class="btn btn-primary drc-download-btn" onclick="alert('CSV download started!')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Configuration Summary panel -->
+    <div class="dry-run-summary-panel">
+      <div class="dry-run-summary-title">Configuration Summary</div>
+
+      <!-- Name badge + Dry Run Completed green pill + timestamp -->
+      <div class="dry-run-summary-meta">
+        <div class="review-name-badge" id="drc-validator-name">—</div>
+        <div class="drc-completed-pill">
+          <span class="drc-completed-dot"></span>
+          Dry Run Completed
+        </div>
+        <span class="dry-run-initiated-time" id="drc-completed-time">—</span>
+      </div>
+
+      <!-- Rule cards (grey background variant) -->
+      <div id="drc-rules-list"></div>
+    </div>
+  </div>
+
+  <!-- Buttons: Back to Configuration (left) | Set Validator ENABLED (right) -->
+  <div class="btn-group" style="justify-content:space-between;">
+    <button class="btn btn-outline" onclick="navigate('screen-step2')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Configuration
+    </button>
+    <button class="btn btn-primary" onclick="showConfirmation(); navigate('screen-step3');">
+      Set Validator
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+
 <!-- ═══════════════════════════ SCREEN 3: SET VALIDATOR ═══════════════════════════ -->
 <div class="screen" id="screen-step3">
   <header class="header">
@@ -2657,20 +2892,28 @@
     document.getElementById('review-name-view-row').style.display = 'flex';
   }
 
+  // Track any pending dry-run timer so we can cancel if the user navigates away
+  let _dryRunTimer = null;
+
   function startDryRun() {
-    // Populate the Dry Run In Progress screen
-    const nameEl = document.getElementById('dryrun-validator-name');
-    if (nameEl) nameEl.textContent = validatorName.trim() || 'Unnamed Validator';
+    // Cancel any previous timer
+    if (_dryRunTimer) { clearTimeout(_dryRunTimer); _dryRunTimer = null; }
+
+    const displayName = validatorName.trim() || 'Unnamed Validator';
 
     // Stamp the initiated time
     const now = new Date();
     const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       + ' at '
       + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+    // ── Populate "Dry Run In Progress" screen ──
+    const nameEl = document.getElementById('dryrun-validator-name');
+    if (nameEl) nameEl.textContent = displayName;
+
     const timeEl = document.getElementById('dryrun-initiated-time');
     if (timeEl) timeEl.textContent = timeStr;
 
-    // Populate rule summaries
     const listEl = document.getElementById('dryrun-rules-list');
     if (listEl) {
       listEl.innerHTML = rules.map((rule, idx) => `
@@ -2680,7 +2923,29 @@
         </div>`).join('');
     }
 
+    // ── Pre-populate "Dry Run Complete" screen ──
+    const drcNameEl = document.getElementById('drc-validator-name');
+    if (drcNameEl) drcNameEl.textContent = displayName;
+
+    const drcTimeEl = document.getElementById('drc-completed-time');
+    if (drcTimeEl) drcTimeEl.textContent = timeStr;
+
+    const drcListEl = document.getElementById('drc-rules-list');
+    if (drcListEl) {
+      drcListEl.innerHTML = rules.map((rule, idx) => `
+        <div class="drc-rule-card">
+          <div class="drc-rule-label">Rule ${idx + 1} Summary</div>
+          <div class="drc-rule-text">${buildRuleSummary(rule)}</div>
+        </div>`).join('');
+    }
+
     navigate('screen-dry-run');
+
+    // After 30 seconds automatically transition to the completed screen
+    _dryRunTimer = setTimeout(function() {
+      _dryRunTimer = null;
+      navigate('screen-dry-run-complete');
+    }, 30000);
   }
 
   /* ══════════════════════════════════════════════════
