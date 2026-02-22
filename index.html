@@ -878,6 +878,39 @@
       color: var(--text-secondary);
       flex-shrink: 0;
     }
+    .rule-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .rule-header-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .rule-collapse-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      transition: color 0.15s, background 0.15s;
+    }
+    .rule-collapse-btn:hover { color: var(--brand-blue); background: var(--brand-blue-light); }
+    .rule-collapsed-summary {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 480px;
+    }
     .rule-delete-btn {
       background: none;
       border: none;
@@ -1941,7 +1974,8 @@
       id: nextRuleId++,
       conditions: [ blankCondition(varName || ALL_VARIABLE_NAMES[0]) ],
       connector: 'AND',
-      amountValue: ''
+      amountValue: '',
+      collapsed: false
     };
   }
 
@@ -1952,6 +1986,13 @@
 
   function deleteRuleById(id) {
     rules = rules.filter(r => r.id !== id);
+    renderRules();
+  }
+
+  function toggleRuleCollapse(id) {
+    const rule = rules.find(r => r.id === id);
+    if (!rule) return;
+    rule.collapsed = !rule.collapsed;
     renderRules();
   }
 
@@ -2038,8 +2079,16 @@
   function refreshRuleSummaryById(ruleId) {
     const rule = rules.find(r => r.id === ruleId);
     if (!rule) return;
+    const text = buildRuleSummary(rule);
+    // Update expanded summary block
     const el = document.getElementById(`rule-summary-${ruleId}`);
-    if (el) el.querySelector('.rule-summary-text').textContent = buildRuleSummary(rule);
+    if (el) el.querySelector('.rule-summary-text').textContent = text;
+    // Update collapsed inline summary if visible
+    const card = document.getElementById(`rule-card-${ruleId}`);
+    if (card) {
+      const inline = card.querySelector('.rule-collapsed-summary');
+      if (inline) inline.textContent = text;
+    }
   }
 
   /* ── IF-block fields for one condition object ── */
@@ -2182,25 +2231,37 @@
       const summaryText = buildRuleSummary(rule);
 
       const card = document.createElement('div');
-      card.className = 'rule-card';
+      card.className = 'rule-card' + (rule.collapsed ? ' rule-card-collapsed' : '');
       card.id = `rule-card-${id}`;
       card.innerHTML = `
         <div class="rule-header">
-          <div class="rule-badge">
-            <svg class="rule-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-            </svg>
-            Rule ${ruleNum}
+          <div class="rule-header-left">
+            <div class="rule-badge">
+              <svg class="rule-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+              </svg>
+              Rule ${ruleNum}
+            </div>
+            ${rule.collapsed ? `<span class="rule-collapsed-summary">${summaryText}</span>` : ''}
           </div>
-          ${rules.length > 1 ? `
-          <button class="rule-delete-btn" onclick="deleteRuleById(${id})" title="Remove rule">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-            </svg>
-          </button>` : ''}
+          <div class="rule-header-right">
+            <button class="rule-collapse-btn" onclick="toggleRuleCollapse(${id})" title="${rule.collapsed ? 'Expand rule' : 'Collapse rule'}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="transform: rotate(${rule.collapsed ? '0deg' : '180deg'}); transition: transform 0.2s;">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            ${rules.length > 1 ? `
+            <button class="rule-delete-btn" onclick="deleteRuleById(${id})" title="Remove rule">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+              </svg>
+            </button>` : ''}
+          </div>
         </div>
 
+        ${!rule.collapsed ? `
         <div class="rule-if-label">IF (select conditions)</div>
 
         <div class="rule-condition-box">
@@ -2228,6 +2289,7 @@
           <div class="rule-summary-label">Rule ${ruleNum} Summary</div>
           <div class="rule-summary-text">${summaryText}</div>
         </div>
+        ` : ''}
       `;
       area.appendChild(card);
     });
