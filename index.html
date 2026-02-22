@@ -1034,6 +1034,44 @@
       white-space: nowrap;
     }
 
+    /* Amount free-text input */
+    .rule-amount-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .rule-amount-prefix {
+      position: absolute;
+      left: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .rule-amount-input {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      padding: 10px 12px 10px 26px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-height: 44px;
+      width: 130px;
+      transition: border-color 0.15s;
+    }
+    .rule-amount-input:focus {
+      outline: none;
+      border-color: var(--brand-blue);
+    }
+    .rule-amount-input::-webkit-inner-spin-button,
+    .rule-amount-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .rule-amount-input[type=number] { -moz-appearance: textfield; }
+
     /* Rule summary pill */
     .rule-summary {
       background: var(--brand-blue-light);
@@ -1690,7 +1728,6 @@
     'Location / State':     ['CA', 'NY', 'TX', 'FL', 'All states'],
   };
 
-  const AMOUNT_OPTIONS = ['$100', '$150', '$200', '$250', '$300', '$500'];
 
   /* ══════════════════════════════════════════════════
      NAVIGATION
@@ -1817,11 +1854,6 @@
         .map(o => `<option value="${o}" ${state.conditionValue === o ? 'selected' : ''}>${o}</option>`)
         .join('');
 
-      // Build amount options
-      const amtOpts = AMOUNT_OPTIONS
-        .map(o => `<option value="${o}" ${state.amountValue === o ? 'selected' : ''}>${o}</option>`)
-        .join('');
-
       // Rule summary text
       const condLabel = state.conditionValue || (VARIABLE_OPTIONS[varName] ? VARIABLE_OPTIONS[varName][0] : '—');
       const amtLabel  = state.amountValue || '$200';
@@ -1877,14 +1909,17 @@
             <!-- Single row: "Provide repayment of [amount select] [per month]" -->
             <div class="rule-then-row">
               <span>Provide repayment of</span>
-              <div class="rule-select-wrap">
+              <div class="rule-amount-wrap">
                 <span class="rule-select-label">Amount</span>
-                <select class="rule-select" style="min-width:130px;" onchange="updateRuleAmount('${safe}', this.value)">
-                  ${amtOpts}
-                </select>
-                <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 12 15 18 9"/>
-                </svg>
+                <span class="rule-amount-prefix">$</span>
+                <input
+                  type="number"
+                  class="rule-amount-input"
+                  min="0"
+                  placeholder="0"
+                  value="${state.amountValue ? state.amountValue.replace(/[^0-9.]/g, '') : ''}"
+                  oninput="updateRuleAmount('${safe}', this.value ? '$' + this.value : '')"
+                />
               </div>
               <span>[per month]</span>
             </div>
