@@ -1218,8 +1218,24 @@
       border-radius: 8px;
       font-size: 14px;
       font-weight: 500;
+      /* default — overridden by modifier classes below */
       background: var(--brand-blue-light);
       color: var(--brand-blue);
+    }
+    /* Initiated → Blue */
+    .ev-dry-run-badge.initiated {
+      background: #EFF4FF;
+      color: #265DDC;
+    }
+    /* In Progress → Orange */
+    .ev-dry-run-badge.in-progress {
+      background: #FFF4EB;
+      color: #C25700;
+    }
+    /* Completed → Green */
+    .ev-dry-run-badge.completed {
+      background: var(--success-bg);
+      color: var(--text-success);
     }
     .ev-status-light {
       display: inline-flex;
@@ -1230,6 +1246,8 @@
       font-weight: 500;
       color: #676d7a;
     }
+    /* Active validator status → Green text */
+    .ev-status-light.active { color: var(--text-success); }
     .ev-status-dot {
       width: 8px;
       height: 8px;
@@ -3553,7 +3571,13 @@
 
     tbody.innerHTML = rows.map(r => {
       const isActive = r.validatorStatus === 'Active';
-      const isDryDone = r.dryRunStatus === 'Dry Run Completed';
+
+      /* Dry Run badge colour class */
+      const dryKey = r.dryRunStatus.toLowerCase();
+      let dryClass = 'initiated';
+      if (dryKey.includes('progress')) dryClass = 'in-progress';
+      else if (dryKey.includes('complet')) dryClass = 'completed';
+
       return `
         <tr>
           <td class="ev-col-gap">${r.date}</td>
@@ -3561,10 +3585,10 @@
           <td class="ev-col-gap" style="min-width:175px">${r.name}</td>
           <td class="ev-col-gap ev-col-benefit" style="min-width:268px;max-width:268px" title="${r.benefit}">${r.benefit}</td>
           <td class="ev-col-gap">
-            <span class="ev-dry-run-badge">${r.dryRunStatus}</span>
+            <span class="ev-dry-run-badge ${dryClass}">${r.dryRunStatus}</span>
           </td>
           <td class="ev-col-gap">
-            <span class="ev-status-light">
+            <span class="ev-status-light${isActive ? ' active' : ''}">
               <span class="ev-status-dot${isActive ? ' active' : ''}"></span>
               ${r.validatorStatus}
             </span>
