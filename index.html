@@ -650,6 +650,59 @@
       color: var(--text-primary);
       min-height: 32px;
     }
+    /* ── Configuration Summary panel (Review screen) ── */
+    .config-summary-panel {
+      background: var(--surface-base);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .config-summary-card {
+      background: var(--surface-overlay);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .config-summary-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.57;
+    }
+    .config-summary-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .config-summary-key {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.4;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .config-summary-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.57;
+      text-align: right;
+    }
+    .config-summary-value.bold {
+      font-weight: 600;
+    }
+    .config-summary-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
     .review-rule-card {
       background: var(--brand-blue-light);
       border-radius: var(--radius-md);
@@ -1893,46 +1946,57 @@
       <div class="form-block-desc" style="margin-top:4px; max-width:800px;">Your rules are configured and saved. Review the summary and test them now to confirm the outcomes align with your expectations.</div>
     </div>
 
-    <!-- Benefit + Validator name + rule summaries container -->
-    <div class="review-container">
+    <!-- Configuration Summary panel -->
+    <div class="config-summary-panel">
 
-      <!-- Benefit badge -->
-      <div class="review-name-row">
-        <div class="review-benefit-label">Benefit / Product</div>
-        <div class="review-name-badge" id="review-benefit-name" style="border-color: var(--brand-blue); color: var(--brand-blue); background: var(--brand-blue-light);">—</div>
-      </div>
+      <!-- White summary card: title + key-value rows -->
+      <div class="config-summary-card">
+        <div class="config-summary-title">Configuration Summary</div>
 
-      <!-- Validator name — view mode -->
-      <div class="review-name-row" id="review-name-view-row">
-        <div class="review-benefit-label">Validator Name</div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <div class="review-name-badge" id="review-validator-name">—</div>
-          <button class="review-edit-btn" onclick="startEditValidatorName()" title="Edit validator name">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </button>
+        <!-- Benefit / Product row -->
+        <div class="config-summary-row">
+          <span class="config-summary-key">Benefit / Product</span>
+          <span class="config-summary-value" id="review-benefit-name">—</span>
+        </div>
+
+        <!-- Validator Name row — view mode -->
+        <div class="config-summary-row" id="review-name-view-row">
+          <span class="config-summary-key">Validator Name</span>
+          <div class="config-summary-name-wrap">
+            <span class="config-summary-value" id="review-validator-name">—</span>
+            <button class="review-edit-btn" onclick="startEditValidatorName()" title="Edit validator name">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Validator Name — edit mode (hidden by default) -->
+        <div class="config-summary-row" id="review-name-edit-row" style="display:none;">
+          <span class="config-summary-key">Validator Name</span>
+          <div style="display:flex; align-items:center; gap:6px; flex:1; justify-content:flex-end;">
+            <input type="text" id="review-name-input" class="text-input" style="height:34px; font-size:14px; flex:1; max-width:320px;"
+              placeholder="e.g. Student Loan — Full Time Employees"
+              oninput="validatorName = this.value" />
+            <button class="btn btn-primary" style="height:34px; padding:0 14px; font-size:13px; white-space:nowrap;" onclick="saveValidatorName()">Save</button>
+            <button class="review-edit-btn" onclick="cancelEditValidatorName()" title="Cancel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rule count row -->
+        <div class="config-summary-row">
+          <span class="config-summary-key">Rule</span>
+          <span class="config-summary-value bold" id="review-rule-count">—</span>
         </div>
       </div>
 
-      <!-- Validator name — edit mode (hidden by default) -->
-      <div class="review-name-row" id="review-name-edit-row" style="display:none;">
-        <div class="review-benefit-label">Validator Name</div>
-        <div style="display:flex; align-items:center; gap:8px; flex:1;">
-          <input type="text" id="review-name-input" class="text-input" style="height:38px; font-size:14px; flex:1;"
-            placeholder="e.g. Student Loan — Full Time Employees"
-            oninput="validatorName = this.value" />
-          <button class="btn btn-primary" style="height:38px; padding:0 16px; font-size:13px; white-space:nowrap;" onclick="saveValidatorName()">Save</button>
-          <button class="review-edit-btn" onclick="cancelEditValidatorName()" title="Cancel">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Rule summary cards -->
+      <!-- Blue rule summary cards -->
       <div id="review-rules-list"></div>
     </div>
   </div>
@@ -2884,13 +2948,17 @@
      STEP 2: DRY RUN
   ══════════════════════════════════════════════════ */
   function goToStep2() {
-    // Populate validator name badge
+    // Populate validator name
     const nameEl = document.getElementById('review-validator-name');
     if (nameEl) nameEl.textContent = validatorName.trim() || 'Unnamed Validator';
 
-    // Populate benefit badge
+    // Populate benefit
     const benefitEl = document.getElementById('review-benefit-name');
     if (benefitEl) benefitEl.textContent = selectedBenefit || '—';
+
+    // Populate rule count
+    const countEl = document.getElementById('review-rule-count');
+    if (countEl) countEl.textContent = rules.length;
 
     // Populate rule summary cards
     const listEl = document.getElementById('review-rules-list');
