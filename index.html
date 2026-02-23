@@ -1260,16 +1260,148 @@
       background: var(--surface-base);
       border: 1px solid var(--border-base);
       border-radius: 12px;
-      padding: 4px 12px 4px 8px;
+      padding: 4px 8px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 14px;
-      font-weight: 500;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
       color: #2a2f3d;
       cursor: pointer;
+      position: relative;
     }
     .ev-action-btn:hover { background: #f0f2f5; }
+
+    /* Kebab dropdown menu */
+    .ev-kebab-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .ev-kebab-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 4px);
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      min-width: 160px;
+      z-index: 200;
+      overflow: hidden;
+    }
+    .ev-kebab-menu.open { display: block; }
+    .ev-kebab-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.1s;
+    }
+    .ev-kebab-item:hover { background: var(--surface-base); }
+    .ev-kebab-item.danger { color: #C0322A; }
+    .ev-kebab-item.danger:hover { background: #FFF1F0; }
+    .ev-kebab-divider {
+      height: 1px;
+      background: var(--border-subtle);
+      margin: 2px 0;
+    }
+
+    /* Rules modal */
+    .ev-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.40);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .ev-modal-backdrop.open { display: flex; }
+    .ev-modal {
+      background: var(--surface-overlay);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+      width: 100%;
+      max-width: 560px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 24px;
+    }
+    .ev-modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+    }
+    .ev-modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .ev-modal-subtitle {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .ev-modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ev-modal-close:hover { background: var(--surface-base); color: var(--text-primary); }
+    .ev-modal-body {
+      padding: 20px 24px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ev-rule-card {
+      background: var(--brand-blue-light);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ev-rule-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .ev-rule-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+    .ev-rule-empty {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 24px 0;
+    }
     .ev-pagination {
       display: flex;
       align-items: center;
@@ -2908,6 +3040,24 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════ RULES MODAL ═══════════════════════════ -->
+<div class="ev-modal-backdrop" id="ev-rules-modal" onclick="handleModalBackdropClick(event)">
+  <div class="ev-modal" onclick="event.stopPropagation()">
+    <div class="ev-modal-header">
+      <div>
+        <div class="ev-modal-title" id="ev-modal-title">Rule Summary</div>
+        <div class="ev-modal-subtitle" id="ev-modal-subtitle"></div>
+      </div>
+      <button class="ev-modal-close" onclick="closeRulesModal()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ev-modal-body" id="ev-modal-body">
+      <!-- Populated by openRulesModal() -->
+    </div>
+  </div>
+</div>
+
 
 <script>
   /* ══════════════════════════════════════════════════
@@ -3547,11 +3697,43 @@
      MISC
   ══════════════════════════════════════════════════ */
   /* ── Sample data for the validators table ── */
+  /* Each validator entry may carry a `rules` array for the modal.
+     Each rule is a plain string (the summary sentence). */
   const VALIDATORS_DATA = [
-    { date: 'Jan 1, 2026', createdBy: 'John Adams',     name: 'Repayment Validator 04', benefit: 'Student loan Employer Contributions', dryRunStatus: 'Initiated', validatorStatus: 'Draft' },
-    { date: 'Jan 1, 2026', createdBy: 'Adam Scott',     name: 'Repayment Validator 03', benefit: 'Student loan Employer Contributions', dryRunStatus: 'Initiated', validatorStatus: 'Draft' },
-    { date: 'Jan 1, 2026', createdBy: 'Jennifer Sams',  name: 'Repayment Validator 01', benefit: 'Student loan Employer Contributions', dryRunStatus: 'Initiated', validatorStatus: 'Draft' },
+    {
+      id: 'v1',
+      date: 'Jan 1, 2026', createdBy: 'John Adams',
+      name: 'Repayment Validator 04', benefit: 'Student loan Employer Contributions',
+      dryRunStatus: 'Initiated', validatorStatus: 'Draft',
+      rules: [
+        'IF Full time employment type → repayment of $300 per month',
+        'IF Hire date is more than 12 months ago → repayment of $150 per month',
+      ],
+    },
+    {
+      id: 'v2',
+      date: 'Jan 1, 2026', createdBy: 'Adam Scott',
+      name: 'Repayment Validator 03', benefit: 'Student loan Employer Contributions',
+      dryRunStatus: 'Initiated', validatorStatus: 'Draft',
+      rules: [
+        'IF Full time employment type → repayment of $250 per month',
+      ],
+    },
+    {
+      id: 'v3',
+      date: 'Jan 1, 2026', createdBy: 'Jennifer Sams',
+      name: 'Repayment Validator 01', benefit: 'Student loan Employer Contributions',
+      dryRunStatus: 'Initiated', validatorStatus: 'Draft',
+      rules: [
+        'IF Part time employment type → repayment of $100 per month',
+        'IF Hire date is more than 24 months ago → repayment of $200 per month',
+        'IF Full time employment type AND Hire date is more than 6 months ago → repayment of $400 per month',
+      ],
+    },
   ];
+
+  /* Live rows = VALIDATORS_DATA + optional freshEntry prepended */
+  let _evRows = [];
 
   function renderValidatorsTable() {
     const tbody = document.getElementById('ev-table-body');
@@ -3559,17 +3741,22 @@
 
     /* Merge the newly-created validator (if any) at the top */
     const freshEntry = validatorName.trim() ? {
+      id: 'fresh',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       createdBy: 'You',
       name: validatorName.trim(),
       benefit: selectedBenefit || '—',
       dryRunStatus: 'Dry Run Completed',
       validatorStatus: 'Active',
+      /* pull live rules from the rule builder */
+      rules: rules.length
+        ? rules.map((rule, idx) => `Rule ${idx + 1}: ${buildRuleSummary(rule)}`)
+        : [],
     } : null;
 
-    const rows = freshEntry ? [freshEntry, ...VALIDATORS_DATA] : VALIDATORS_DATA;
+    _evRows = freshEntry ? [freshEntry, ...VALIDATORS_DATA] : [...VALIDATORS_DATA];
 
-    tbody.innerHTML = rows.map(r => {
+    tbody.innerHTML = _evRows.map((r, idx) => {
       const isActive = r.validatorStatus === 'Active';
 
       /* Dry Run badge colour class */
@@ -3594,9 +3781,22 @@
             </span>
           </td>
           <td>
-            <button class="ev-action-btn" title="More actions">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-            </button>
+            <div class="ev-kebab-wrap" id="kebab-wrap-${idx}">
+              <button class="ev-action-btn" onclick="toggleKebabMenu(event, ${idx})" title="More actions">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+              </button>
+              <div class="ev-kebab-menu" id="kebab-menu-${idx}">
+                <div class="ev-kebab-item" onclick="openRulesModal(${idx})">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  See Rules
+                </div>
+                <div class="ev-kebab-divider"></div>
+                <div class="ev-kebab-item danger" onclick="removeValidator(${idx})">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  Remove Validator
+                </div>
+              </div>
+            </div>
           </td>
         </tr>`;
     }).join('');
@@ -3607,10 +3807,118 @@
     navigate('screen-validators');
   }
 
+  /* ── Kebab menu ── */
+  let _openKebabIdx = null;
+
+  function toggleKebabMenu(e, idx) {
+    e.stopPropagation();
+    const isAlreadyOpen = _openKebabIdx === idx;
+    closeAllKebabMenus();
+    if (!isAlreadyOpen) {
+      document.getElementById('kebab-menu-' + idx).classList.add('open');
+      _openKebabIdx = idx;
+    }
+  }
+
+  function closeAllKebabMenus() {
+    document.querySelectorAll('.ev-kebab-menu.open').forEach(m => m.classList.remove('open'));
+    _openKebabIdx = null;
+  }
+
+  function removeValidator(idx) {
+    closeAllKebabMenus();
+    _evRows.splice(idx, 1);
+    /* Re-render without a fresh entry rebuild */
+    const tbody = document.getElementById('ev-table-body');
+    if (!tbody) return;
+    /* Re-render by calling full render but syncing _evRows first */
+    const saved = _evRows.slice();
+    /* Temporarily override to avoid freshEntry being re-prepended */
+    _evRows = saved;
+    tbody.innerHTML = saved.map((r, i) => {
+      const isActive = r.validatorStatus === 'Active';
+      const dryKey = r.dryRunStatus.toLowerCase();
+      let dryClass = 'initiated';
+      if (dryKey.includes('progress')) dryClass = 'in-progress';
+      else if (dryKey.includes('complet')) dryClass = 'completed';
+      return `
+        <tr>
+          <td class="ev-col-gap">${r.date}</td>
+          <td class="ev-col-gap">${r.createdBy}</td>
+          <td class="ev-col-gap" style="min-width:175px">${r.name}</td>
+          <td class="ev-col-gap ev-col-benefit" style="min-width:268px;max-width:268px" title="${r.benefit}">${r.benefit}</td>
+          <td class="ev-col-gap"><span class="ev-dry-run-badge ${dryClass}">${r.dryRunStatus}</span></td>
+          <td class="ev-col-gap">
+            <span class="ev-status-light${isActive ? ' active' : ''}">
+              <span class="ev-status-dot${isActive ? ' active' : ''}"></span>
+              ${r.validatorStatus}
+            </span>
+          </td>
+          <td>
+            <div class="ev-kebab-wrap" id="kebab-wrap-${i}">
+              <button class="ev-action-btn" onclick="toggleKebabMenu(event, ${i})" title="More actions">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+              </button>
+              <div class="ev-kebab-menu" id="kebab-menu-${i}">
+                <div class="ev-kebab-item" onclick="openRulesModal(${i})">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  See Rules
+                </div>
+                <div class="ev-kebab-divider"></div>
+                <div class="ev-kebab-item danger" onclick="removeValidator(${i})">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  Remove Validator
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  /* ── Rules modal ── */
+  function openRulesModal(idx) {
+    closeAllKebabMenus();
+    const row = _evRows[idx];
+    if (!row) return;
+
+    document.getElementById('ev-modal-title').textContent = row.name;
+    document.getElementById('ev-modal-subtitle').textContent = row.benefit;
+
+    const body = document.getElementById('ev-modal-body');
+    const rowRules = row.rules || [];
+    if (rowRules.length === 0) {
+      body.innerHTML = '<div class="ev-rule-empty">No rules configured for this validator.</div>';
+    } else {
+      body.innerHTML = rowRules.map((ruleText, i) => `
+        <div class="ev-rule-card">
+          <div class="ev-rule-label">Rule ${i + 1}</div>
+          <div class="ev-rule-text">${ruleText}</div>
+        </div>`).join('');
+    }
+
+    document.getElementById('ev-rules-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeRulesModal() {
+    document.getElementById('ev-rules-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleModalBackdropClick(e) {
+    if (e.target === document.getElementById('ev-rules-modal')) closeRulesModal();
+  }
+
   /* ─── Global click-outside to close dropdowns ─── */
   document.addEventListener('click', function(e) {
     const bWrap = document.getElementById('benefit-select-wrap');
     if (benefitDropdownOpen && bWrap && !bWrap.contains(e.target)) closeDropdown('benefit');
+    /* Close any open kebab menu if click is outside */
+    if (_openKebabIdx !== null) {
+      const wrap = document.getElementById('kebab-wrap-' + _openKebabIdx);
+      if (wrap && !wrap.contains(e.target)) closeAllKebabMenus();
+    }
   });
 </script>
 </body>
