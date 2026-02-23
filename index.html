@@ -2107,8 +2107,9 @@
     <div class="dry-run-summary-panel">
       <div class="dry-run-summary-title">Configuration Summary</div>
 
-      <!-- Name badge + Dry Run Initiated pill + timestamp -->
+      <!-- Benefit + Name badge + Dry Run Initiated pill + timestamp -->
       <div class="dry-run-summary-meta">
+        <div class="review-name-badge" id="dryrun-benefit-name">—</div>
         <div class="review-name-badge" id="dryrun-validator-name">—</div>
         <div class="dry-run-initiated-pill">
           <span class="dry-run-initiated-dot"></span>
@@ -2265,8 +2266,9 @@
     <div class="dry-run-summary-panel">
       <div class="dry-run-summary-title">Configuration Summary</div>
 
-      <!-- Name badge + Dry Run Completed green pill + timestamp -->
+      <!-- Benefit + Name badge + Dry Run Completed green pill + timestamp -->
       <div class="dry-run-summary-meta">
+        <div class="review-name-badge" id="drc-benefit-name">—</div>
         <div class="review-name-badge" id="drc-validator-name">—</div>
         <div class="drc-completed-pill">
           <span class="drc-completed-dot"></span>
@@ -3024,6 +3026,9 @@
       + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     // ── Populate "Dry Run In Progress" screen ──
+    const benefitEl = document.getElementById('dryrun-benefit-name');
+    if (benefitEl) benefitEl.textContent = selectedBenefit || '—';
+
     const nameEl = document.getElementById('dryrun-validator-name');
     if (nameEl) nameEl.textContent = displayName;
 
@@ -3040,6 +3045,9 @@
     }
 
     // ── Pre-populate "Dry Run Complete" screen ──
+    const drcBenefitEl = document.getElementById('drc-benefit-name');
+    if (drcBenefitEl) drcBenefitEl.textContent = selectedBenefit || '—';
+
     const drcNameEl = document.getElementById('drc-validator-name');
     if (drcNameEl) drcNameEl.textContent = displayName;
 
