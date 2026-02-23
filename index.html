@@ -2213,18 +2213,22 @@
   <!-- Dry Run Complete card -->
   <div class="form-card" style="gap:24px;">
 
-    <!-- Green check seal icon -->
+    <!-- Seal check icon (Figma node 1:5307) -->
     <div class="drc-seal">
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="24" cy="24" r="23" fill="#E6FAEE" stroke="#16B76C" stroke-width="2"/>
-        <path d="M14 24.5L20.5 31L34 17" stroke="#027A42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <div style="border: 1px solid var(--border-subtle, #F0F2F5); border-radius: 12px; padding: 8px; display:flex; align-items:center; justify-content:center; background:#fff;">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Seal/badge shape -->
+          <path d="M16 2L19.09 5.26L23.5 4.27L24.74 8.66L29 10.18L27.74 14.5L30.5 17.91L27.74 21.32L29 25.64L24.74 27.16L23.5 31.55L19.09 30.56L16 33.82L12.91 30.56L8.5 31.55L7.26 27.16L3 25.64L4.26 21.32L1.5 17.91L4.26 14.5L3 10.18L7.26 8.66L8.5 4.27L12.91 5.26L16 2Z" fill="#17B26A"/>
+          <!-- White checkmark -->
+          <path d="M10.5 16.5L14 20L21.5 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
     </div>
 
     <!-- Heading + description -->
     <div>
       <div class="form-block-title" style="font-size:20px;">Dry Run Complete. Ready for review</div>
-      <div class="form-block-desc" style="margin-top:6px; max-width:600px;">Before activating the validator, you must download and review the results CSV. Confirm that the file reflects your entire employee population — all names, IDs, and benefit details.</div>
+      <div class="form-block-desc" style="margin-top:6px; max-width:800px;">Before activating the validator, you must download and review the results CSV. Confirm that the file reflects your entire employee population — all names, IDs, and benefit details.</div>
     </div>
 
     <!-- CSV Download card -->
