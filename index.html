@@ -865,40 +865,26 @@
       height: 40px;
       flex-shrink: 0;
     }
-    .drc-completed-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--success-bg);
-      color: var(--text-success);
-      border-radius: var(--radius-full);
-      padding: 4px 12px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-    .drc-completed-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-success);
-      flex-shrink: 0;
-    }
+    /* CSV download card — green bg, no border */
     .drc-download-card {
-      border: 1.5px solid #16B76C;
-      border-radius: var(--radius-lg);
       background: var(--success-bg);
-      padding: 20px 24px;
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
       width: 100%;
-    }
-    .drc-download-card-inner {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
     }
+    .drc-download-card-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .drc-file-icon {
-      width: 44px;
-      height: 48px;
+      width: 32px;
+      height: 32px;
       position: relative;
       flex-shrink: 0;
     }
@@ -908,31 +894,30 @@
     }
     .drc-csv-badge {
       position: absolute;
-      bottom: 4px;
-      left: 1px;
+      bottom: 0px;
+      left: 0px;
       background: #17B26A;
       border-radius: 2px;
-      padding: 2px 3px;
+      padding: 1.5px 2.5px;
       font-family: 'DM Sans', sans-serif;
-      font-size: 8px;
+      font-size: 7px;
       font-weight: 700;
       color: #fff;
       line-height: 1;
       letter-spacing: 0.2px;
     }
-    .drc-file-info {
-      flex: 1;
-      min-width: 0;
-    }
+    .drc-file-info { min-width: 0; }
     .drc-file-name {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: var(--text-primary);
+      line-height: 1.57;
     }
     .drc-file-size {
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 400;
       color: var(--text-muted);
-      margin-top: 2px;
+      line-height: 1.5;
     }
     .drc-download-btn {
       flex-shrink: 0;
@@ -940,24 +925,85 @@
       padding: 10px 20px;
       min-height: 40px;
     }
-    .drc-rule-card {
-      background: var(--surface-base);
+    /* Config Summary panel — subtle border */
+    .drc-summary-panel {
       border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    .drc-summary-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .drc-summary-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+    }
+    .drc-summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .drc-summary-key {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+    .drc-summary-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.57;
+      text-align: right;
+    }
+    .drc-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-bg);
+      color: var(--text-success);
+      border-radius: var(--radius-sm);
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .drc-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-success);
+      flex-shrink: 0;
+    }
+    /* Rule cards inside drc — blue bg matching review screen */
+    .drc-rule-card {
+      background: var(--brand-blue-light);
       border-radius: var(--radius-md);
-      padding: 14px 16px;
-      margin-top: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .drc-rule-label {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
+      font-weight: 700;
+      color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      letter-spacing: 0.04em;
     }
     .drc-rule-text {
-      font-size: 14px;
-      color: var(--text-subtle);
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
       line-height: 1.5;
     }
 
@@ -2214,37 +2260,29 @@
   <!-- Dry Run Complete card -->
   <div class="form-card" style="gap:24px;">
 
-    <!-- Seal check icon (Figma node 1:5307) -->
-    <div class="drc-seal">
-      <div style="border: 1px solid var(--border-subtle, #F0F2F5); border-radius: 10px; padding: 6px; display:flex; align-items:center; justify-content:center; background:#fff;">
-        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Seal/badge shape -->
-          <path d="M16 2L19.09 5.26L23.5 4.27L24.74 8.66L29 10.18L27.74 14.5L30.5 17.91L27.74 21.32L29 25.64L24.74 27.16L23.5 31.55L19.09 30.56L16 33.82L12.91 30.56L8.5 31.55L7.26 27.16L3 25.64L4.26 21.32L1.5 17.91L4.26 14.5L3 10.18L7.26 8.66L8.5 4.27L12.91 5.26L16 2Z" fill="#17B26A"/>
-          <!-- White checkmark -->
-          <path d="M10.5 16.5L14 20L21.5 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    <!-- Icon + heading + description stacked vertically -->
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <!-- Seal check icon -->
+      <div class="drc-seal" style="margin-bottom:20px;">
+        <div style="border: 1px solid var(--border-subtle, #F0F2F5); border-radius: 10px; padding: 6px; display:flex; align-items:center; justify-content:center; background:#fff;">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 2L19.09 5.26L23.5 4.27L24.74 8.66L29 10.18L27.74 14.5L30.5 17.91L27.74 21.32L29 25.64L24.74 27.16L23.5 31.55L19.09 30.56L16 33.82L12.91 30.56L8.5 31.55L7.26 27.16L3 25.64L4.26 21.32L1.5 17.91L4.26 14.5L3 10.18L7.26 8.66L8.5 4.27L12.91 5.26L16 2Z" fill="#17B26A"/>
+            <path d="M10.5 16.5L14 20L21.5 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
+      <div class="form-block-title" style="font-size:20px; font-weight:700;">Dry Run Complete. Ready for review</div>
+      <div class="form-block-desc" style="margin-top:4px; max-width:800px;">Before activating the validator, you must download and review the results CSV. Confirm that the file reflects your entire employee population — all names, IDs, and benefit details.</div>
     </div>
 
-    <!-- Heading + description -->
-    <div>
-      <div class="form-block-title" style="font-size:20px;">Dry Run Complete. Ready for review</div>
-      <div class="form-block-desc" style="margin-top:6px; max-width:800px;">Before activating the validator, you must download and review the results CSV. Confirm that the file reflects your entire employee population — all names, IDs, and benefit details.</div>
-    </div>
-
-    <!-- CSV Download card -->
+    <!-- CSV Download card: green bg, file icon + name/size, outline button -->
     <div class="drc-download-card">
-      <div class="drc-download-card-inner">
-        <!-- CSV file icon (document shape + green CSV badge) -->
+      <div class="drc-download-card-left">
         <div class="drc-file-icon">
-          <!-- Document outline matching Figma node 1:5321 -->
           <svg class="drc-file-doc" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Page body -->
             <rect x="2" y="2" width="34" height="44" rx="3" fill="white" stroke="#D0D5DD" stroke-width="1.5"/>
-            <!-- Folded corner -->
             <path d="M24 2 L36 14 L24 14 Z" fill="#E4E7EC" stroke="#D0D5DD" stroke-width="1.5" stroke-linejoin="round"/>
             <path d="M24 2 L24 14 L36 14" fill="none" stroke="#D0D5DD" stroke-width="1.5"/>
-            <!-- Line decorations -->
             <line x1="8" y1="22" x2="28" y2="22" stroke="#E4E7EC" stroke-width="2" stroke-linecap="round"/>
             <line x1="8" y1="28" x2="28" y2="28" stroke="#E4E7EC" stroke-width="2" stroke-linecap="round"/>
             <line x1="8" y1="34" x2="20" y2="34" stroke="#E4E7EC" stroke-width="2" stroke-linecap="round"/>
@@ -2253,32 +2291,50 @@
         </div>
         <div class="drc-file-info">
           <div class="drc-file-name">Repayment Validator.CSV</div>
-          <div class="drc-file-size">2.15 KB</div>
+          <div class="drc-file-size">2.15KB</div>
         </div>
-        <button class="btn btn-outline drc-download-btn" onclick="alert('CSV download started!')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download CSV
-        </button>
       </div>
+      <button class="btn btn-outline drc-download-btn" onclick="alert('CSV download started!')">
+        Download CSV
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
     </div>
 
-    <!-- Configuration Summary panel -->
-    <div class="dry-run-summary-panel">
-      <div class="dry-run-summary-title">Configuration Summary</div>
+    <!-- Configuration Summary panel — subtle border, key-value table -->
+    <div class="drc-summary-panel">
+      <div class="drc-summary-title">Configuration Summary</div>
+      <div class="drc-summary-inner">
 
-      <!-- Benefit + Name badge + Dry Run Completed green pill + timestamp -->
-      <div class="dry-run-summary-meta">
-        <div class="review-name-badge" id="drc-benefit-name">—</div>
-        <div class="review-name-badge" id="drc-validator-name">—</div>
-        <div class="drc-completed-pill">
-          <span class="drc-completed-dot"></span>
-          Dry Run Completed
+        <!-- Benefit / Product -->
+        <div class="drc-summary-row">
+          <span class="drc-summary-key">Benefit / Product</span>
+          <span class="drc-summary-value" id="drc-benefit-name">—</span>
         </div>
-        <span class="dry-run-initiated-time" id="drc-completed-time">—</span>
-      </div>
 
-      <!-- Rule cards (grey background variant) -->
-      <div id="drc-rules-list"></div>
+        <!-- Validator Name -->
+        <div class="drc-summary-row">
+          <span class="drc-summary-key">Validator Name</span>
+          <span class="drc-summary-value" id="drc-validator-name">—</span>
+        </div>
+
+        <!-- Status -->
+        <div class="drc-summary-row">
+          <span class="drc-summary-key">Status</span>
+          <span class="drc-status-pill">
+            <span class="drc-status-dot"></span>
+            Dry Run Completed
+          </span>
+        </div>
+
+        <!-- Date -->
+        <div class="drc-summary-row">
+          <span class="drc-summary-key">Date</span>
+          <span class="drc-summary-value" id="drc-completed-time">—</span>
+        </div>
+
+        <!-- Rule summary cards -->
+        <div id="drc-rules-list"></div>
+      </div>
     </div>
   </div>
 
