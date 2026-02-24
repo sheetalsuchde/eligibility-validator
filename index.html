@@ -2448,7 +2448,7 @@
 
         <!-- Rule count row -->
         <div class="config-summary-row">
-          <span class="config-summary-key">Rule</span>
+          <span class="config-summary-key" id="review-rule-label">Rule</span>
           <span class="config-summary-value bold" id="review-rule-count">—</span>
         </div>
       </div>
@@ -3545,9 +3545,11 @@
     const benefitEl = document.getElementById('review-benefit-name');
     if (benefitEl) benefitEl.textContent = selectedBenefit || '—';
 
-    // Populate rule count
+    // Populate rule count + pluralise label
     const countEl = document.getElementById('review-rule-count');
     if (countEl) countEl.textContent = rules.length;
+    const labelEl = document.getElementById('review-rule-label');
+    if (labelEl) labelEl.textContent = rules.length > 1 ? 'Rules' : 'Rule';
 
     // Populate rule summary cards
     const listEl = document.getElementById('review-rules-list');
