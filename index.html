@@ -3772,8 +3772,19 @@
         ? rules.map((rule, idx) => `Rule ${idx + 1}: ${buildRuleSummary(rule)}`)
         : [],
     };
-    /* Prepend to VALIDATORS_DATA snapshot so showValidatorsList always shows it */
-    _evRows = [newEntry, ...VALIDATORS_DATA];
+    /* Demote any existing Active validator for the same benefit to Draft */
+    const updatedData = VALIDATORS_DATA.map(v => {
+      if (
+        v.validatorStatus === 'Active' &&
+        v.benefit.toLowerCase() === (selectedBenefit || '').toLowerCase()
+      ) {
+        return { ...v, validatorStatus: 'Draft' };
+      }
+      return v;
+    });
+
+    /* Prepend new entry; existing same-benefit validators are now Draft */
+    _evRows = [newEntry, ...updatedData];
 
     navigate('screen-success');
   }
