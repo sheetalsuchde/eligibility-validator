@@ -2835,40 +2835,49 @@
 
   <!-- Confirmation Card -->
   <div class="confirm-card">
-    <div>
-      <div class="confirm-section-title">Validator Summary</div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Validator Name</span>
-        <span class="confirm-row-value" id="confirm-name">—</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Benefit / Product</span>
-        <span class="confirm-row-value" id="confirm-benefit">Student Loan Employer Contributions</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Eligibility Variables</span>
-        <span class="confirm-row-value" id="confirm-vars">Employment Type, Hire date</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Dry Run Status</span>
-        <span class="confirm-row-value">
-          <span class="confirm-active-badge">
-            <span class="confirm-active-dot"></span>
-            Passed — 1,284 eligible, 78 flagged
+    <div class="config-summary-panel">
+      <div class="config-summary-card">
+        <div class="config-summary-title">Validator Summary</div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Validator Name</span>
+          <span class="config-summary-value bold" id="confirm-name">—</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Benefit / Product</span>
+          <span class="config-summary-value" id="confirm-benefit">Student Loan Employer Contributions</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Eligibility Variables</span>
+          <span class="config-summary-value" id="confirm-vars">Employment Type, Hire date</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Dry Run Status</span>
+          <span class="config-summary-value">
+            <span class="drc-status-pill">
+              <span class="drc-status-dot"></span>
+              Passed — 1,284 eligible out of 1,500
+            </span>
           </span>
-        </span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Active Rules</span>
-        <span class="confirm-row-value" id="confirm-rule-count">3</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Replacing</span>
-        <span class="confirm-row-value">Student Loan Repayment Validator 05</span>
-      </div>
-      <div class="confirm-row">
-        <span class="confirm-row-label">Next cycle</span>
-        <span class="confirm-row-value">March 01, 2026</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key" id="confirm-rule-label">Rule</span>
+          <span class="config-summary-value bold" id="confirm-rule-count">—</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Replacing</span>
+          <span class="config-summary-value">Student Loan Repayment Validator 05</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Next cycle</span>
+          <span class="config-summary-value">March 01, 2026</span>
+        </div>
       </div>
     </div>
     <div class="helper-box">
@@ -3707,8 +3716,10 @@
       validatorName.trim() || '—';
     document.getElementById('confirm-benefit').textContent =
       selectedBenefit || 'Student Loan Employer Contributions';
-    document.getElementById('confirm-rule-count').textContent =
-      rules.length || 0;
+    const ruleCount = rules.length || 0;
+    document.getElementById('confirm-rule-count').textContent = ruleCount;
+    const confirmLabel = document.getElementById('confirm-rule-label');
+    if (confirmLabel) confirmLabel.textContent = ruleCount > 1 ? 'Rules' : 'Rule';
   }
 
   /* ══════════════════════════════════════════════════
