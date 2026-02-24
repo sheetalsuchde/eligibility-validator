@@ -42,8 +42,9 @@
       background: transparent;
       color: var(--text-primary);
       -webkit-font-smoothing: antialiased;
-      margin: 0;
-      padding: 0;
+      max-width: 1280px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     /* ───── SCREENS ───── */
@@ -51,26 +52,31 @@
     .screen.active { display: flex; }
 
     /* ───── HEADER ───── */
-    /* Full-width white bar */
     .header {
       background: var(--surface-overlay);
       border-bottom: 1px solid var(--border-base);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 48px;
       position: sticky;
       top: 0;
       z-index: 100;
       flex-shrink: 0;
-      width: 100%;
+      /* Break out of body max-width to span full viewport */
+      width: 100vw;
+      margin-left: calc(-1 * ((100vw - 1280px) / 2));
       box-sizing: border-box;
     }
 
-    /* Inner container: centred, max 1280px, 48px side padding */
     .header-inner {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 16px 48px;
+      padding: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      width: 100%;
       box-sizing: border-box;
     }
 
@@ -205,12 +211,7 @@
 
     /* ───── PAGE HERO (landing) ───── */
     .page-hero {
-      width: 100%;
-      max-width: 1280px;
-      margin-left: auto;
-      margin-right: auto;
       padding: 24px 0;
-      box-sizing: border-box;
       text-align: left;
     }
     .page-hero h1 {
@@ -2058,42 +2059,31 @@
     .spacer { flex: 1; }
     .mt-auto { margin-top: auto; }
 
-    /* ── Inner content: centred at 1280px with 48px side gutters ── */
-    /* Flow elements: use padding for side gutters */
+    /* ── Inner content: fills outer body with 48px side gutters ── */
+    .page-hero,
     .step-header,
     .stepper,
     .form-card,
     .form-container,
-    .validators-table,
-    .btn-group {
-      max-width: 1280px;
-      margin-left: auto;
-      margin-right: auto;
-      padding-left: 48px;
-      padding-right: 48px;
-      box-sizing: border-box;
-    }
-
-    /* Card elements: use margin for side gutters */
     .section-card,
     .faq-section,
     .confirm-card,
-    .dry-run-info {
-      max-width: 1280px;
-      margin-left: auto;
-      margin-right: auto;
-      box-sizing: border-box;
-      width: calc(100% - 96px);
+    .dry-run-info,
+    .validators-table,
+    .btn-group {
+      margin-left: 48px;
+      margin-right: 48px;
     }
 
     @media (max-width: 900px) {
       .form-section { flex-direction: column; gap: 24px; }
       .form-block { width: 100%; min-width: unset; }
       .how-it-works-grid { flex-direction: column; }
-      .header-inner { padding: 12px 16px; }
-      .page-hero, .step-header { padding-left: 20px; padding-right: 20px; }
-      .form-container, .form-card, .stepper, .validators-table, .btn-group { padding-left: 20px; padding-right: 20px; }
-      .section-card, .faq-section, .form-container, .dry-run-info, .confirm-card { width: calc(100% - 40px); }
+      .header { padding: 12px 16px; }
+      .page-hero, .step-header { padding: 20px 20px; }
+      .section-card, .faq-section, .form-container, .dry-run-info, .confirm-card { margin-left: 20px; margin-right: 20px; }
+      .stepper { margin: 0 20px; }
+      .btn-group { padding: 20px 20px; }
     }
   </style>
 </head>
