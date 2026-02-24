@@ -3755,6 +3755,26 @@
       name ? `"${name}"` : 'Your eligibility validator';
     document.getElementById('success-benefit').textContent =
       selectedBenefit || 'Student Loan Employer Contributions';
+
+    /* Snapshot the newly created validator into _evRows so it appears
+       on the Existing Validators screen immediately after activation */
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const newEntry = {
+      id: 'fresh-' + Date.now(),
+      date: dateStr,
+      createdBy: 'You',
+      name: name || 'Unnamed Validator',
+      benefit: selectedBenefit || '—',
+      dryRunStatus: 'Dry Run Completed',
+      validatorStatus: 'Active',
+      rules: rules.length
+        ? rules.map((rule, idx) => `Rule ${idx + 1}: ${buildRuleSummary(rule)}`)
+        : [],
+    };
+    /* Prepend to VALIDATORS_DATA snapshot so showValidatorsList always shows it */
+    _evRows = [newEntry, ...VALIDATORS_DATA];
+
     navigate('screen-success');
   }
 
@@ -3800,11 +3820,24 @@
   /* Live rows = VALIDATORS_DATA + optional freshEntry prepended */
   let _evRows = [];
 
+  function renderValidatorsTableFromRows(rows) {
+    const tbody = document.getElementById('ev-table-body');
+    if (!tbody) return;
+    _evRows = rows;
+    renderEvTableBody(tbody);
+  }
+
   function renderValidatorsTable() {
     const tbody = document.getElementById('ev-table-body');
     if (!tbody) return;
 
-    /* Merge the newly-created validator (if any) at the top */
+    /* If activate() already built _evRows, use it directly */
+    if (_evRows.length > 0) {
+      renderEvTableBody(tbody);
+      return;
+    }
+
+    /* Otherwise merge the newly-created validator (if any) at the top */
     const freshEntry = validatorName.trim() ? {
       id: 'fresh',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -3820,7 +3853,10 @@
     } : null;
 
     _evRows = freshEntry ? [freshEntry, ...VALIDATORS_DATA] : [...VALIDATORS_DATA];
+    renderEvTableBody(tbody);
+  }
 
+  function renderEvTableBody(tbody) {
     tbody.innerHTML = _evRows.map((r, idx) => {
       const isActive = r.validatorStatus === 'Active';
 
