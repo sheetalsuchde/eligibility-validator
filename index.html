@@ -2555,23 +2555,44 @@
       <div class="form-block-desc" style="margin-top:4px;">We're currently running a test to validate your rules. This typically takes 4–5 hours. Once it's complete, we'll send you an email notification so you can return and download the results.</div>
     </div>
 
-    <!-- Configuration Summary panel -->
-    <div class="dry-run-summary-panel">
-      <div class="dry-run-summary-title">Configuration Summary</div>
+    <!-- Configuration Summary panel — matches Review screen layout -->
+    <div class="config-summary-panel">
+      <div class="config-summary-card">
+        <div class="config-summary-title">Configuration Summary</div>
 
-      <!-- Benefit + Name badge + Dry Run Initiated pill + timestamp -->
-      <div class="dry-run-summary-meta">
-        <div class="review-name-badge" id="dryrun-benefit-name">—</div>
-        <div class="review-name-badge" id="dryrun-validator-name">—</div>
-        <div class="dry-run-initiated-pill">
-          <span class="dry-run-initiated-dot"></span>
-          Dry Run Initiated
+        <div class="config-summary-row">
+          <span class="config-summary-key">Benefit / Product</span>
+          <span class="config-summary-value" id="dryrun-benefit-name">—</span>
         </div>
-        <span class="dry-run-initiated-time" id="dryrun-initiated-time">—</span>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Validator Name</span>
+          <span class="config-summary-value bold" id="dryrun-validator-name">—</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key" id="dryrun-rule-label">Rule</span>
+          <span class="config-summary-value bold" id="dryrun-rule-count">—</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Status</span>
+          <span class="config-summary-value">
+            <span class="dry-run-initiated-pill">
+              <span class="dry-run-initiated-dot"></span>
+              Dry Run Initiated
+            </span>
+          </span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Date</span>
+          <span class="config-summary-value" id="dryrun-initiated-time">—</span>
+        </div>
       </div>
 
-      <!-- Rule cards -->
-      <div id="dryrun-rules-list"></div>
+      <!-- Rule summary cards -->
+      <div id="dryrun-rules-list" style="display:flex;flex-direction:column;gap:12px;"></div>
     </div>
   </div>
 
@@ -3621,6 +3642,11 @@
 
     const nameEl = document.getElementById('dryrun-validator-name');
     if (nameEl) nameEl.textContent = displayName;
+
+    const countEl2 = document.getElementById('dryrun-rule-count');
+    if (countEl2) countEl2.textContent = rules.length;
+    const labelEl2 = document.getElementById('dryrun-rule-label');
+    if (labelEl2) labelEl2.textContent = rules.length > 1 ? 'Rules' : 'Rule';
 
     const timeEl = document.getElementById('dryrun-initiated-time');
     if (timeEl) timeEl.textContent = timeStr;
