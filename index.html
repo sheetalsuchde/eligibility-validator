@@ -1966,25 +1966,28 @@
 
     /* Rule summary pill */
     .rule-summary {
-      background: var(--brand-blue-light);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
+      background: #EFF4FF;
+      border-radius: 8px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 8px;
+      overflow: hidden;
+      width: 100%;
     }
     .rule-summary-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0;
+      line-height: 22px;
     }
     .rule-summary-text {
-      font-size: 15px;
-      font-weight: 400;
+      font-size: 16px;
+      font-weight: 500;
       color: var(--text-primary);
-      line-height: 1.5;
+      line-height: 24px;
     }
 
     /* Add another Rule button — matches Figma 207:13534 */
@@ -3532,7 +3535,7 @@
         </div>
 
         <div class="rule-summary" id="rule-summary-${id}">
-          <div class="rule-summary-label">Rule ${ruleNum} Summary</div>
+          <div class="rule-summary-label">Rule Summary</div>
           <div class="rule-summary-text">${summaryText}</div>
         </div>
         ` : ''}
