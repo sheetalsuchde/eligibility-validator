@@ -2109,9 +2109,172 @@
       .stepper { margin: 0 20px; }
       .btn-group { padding: 20px 20px; }
     }
+
+    /* ───── SIDEBAR NAV ───── */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 200px;
+      background: #2a2f3d;
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 8px;
+      box-sizing: border-box;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      gap: 2px;
+    }
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-top {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+      line-height: 18px;
+      transition: background 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.08); }
+    .sidebar-item.active { background: #265DDC; }
+
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-icon-sm {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-icon-white {
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-divider {
+      border-top: 0.5px solid #8f95a3;
+      margin: 8px 0 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-top: 12px;
+    }
+
   </style>
 </head>
 <body>
+
+<!-- ───── SIDEBAR NAV ───── -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <!-- Home -->
+    <div class="sidebar-item" onclick="closeSidebar(); navigate('screen-landing')">
+      <div class="sidebar-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+      </div>
+      <span>Home</span>
+    </div>
+
+    <!-- Employees -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-white">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a2f3d" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <span>Employees</span>
+    </div>
+
+    <!-- Statements -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-white">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a2f3d" stroke-width="2" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+      </div>
+      <span>Statements</span>
+    </div>
+
+    <!-- Validators — active -->
+    <div class="sidebar-item active" onclick="closeSidebar(); showValidatorsList()">
+      <div class="sidebar-icon-white">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#265DDC" stroke-width="2" stroke-linecap="round"><path d="M12 2L3 7v5c0 5 4 9.3 9 10.3C17 21.3 21 17 21 12V7l-9-5z"/><polyline points="9 12 11 14 15 10"/></svg>
+      </div>
+      <span>Validators</span>
+    </div>
+
+    <!-- Resource Centre -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-white">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2a2f3d" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15z"/></svg>
+      </div>
+      <span>Resource Centre</span>
+    </div>
+  </div>
+
+  <!-- Divider + bottom items -->
+  <div class="sidebar-divider">
+    <!-- Manage account -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      </div>
+      <span>Manage account</span>
+    </div>
+
+    <!-- Help Center -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+      </div>
+      <span>Help Center</span>
+    </div>
+
+    <!-- Logout -->
+    <div class="sidebar-item" onclick="closeSidebar()">
+      <div class="sidebar-icon-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+      <span>Logout</span>
+    </div>
+  </div>
+</nav>
 
 <!-- ═══════════════════════════════════════════════════════════════
      SHARED HEADER (rendered once per screen via JS)
@@ -2123,7 +2286,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2224,7 +2387,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2354,7 +2517,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2492,7 +2655,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2625,7 +2788,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2785,7 +2948,7 @@
   <header class="header">
     <div class="header-inner">
     <div class="header-left">
-      <button class="header-action-btn">
+      <button class="header-action-btn" onclick="openSidebar()">
         <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
         Menu
       </button>
@@ -2927,7 +3090,7 @@
     <header class="header">
       <div class="header-inner">
     <div class="header-left">
-        <button class="header-action-btn">
+        <button class="header-action-btn" onclick="openSidebar()">
           <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><rect y="0" width="16" height="2" rx="1" fill="currentColor"/><rect y="6" width="16" height="2" rx="1" fill="currentColor"/><rect y="12" width="16" height="2" rx="1" fill="currentColor"/></svg>
           Menu
         </button>
@@ -3186,6 +3349,18 @@
   /* ══════════════════════════════════════════════════
      NAVIGATION
   ══════════════════════════════════════════════════ */
+  /* ── Sidebar ── */
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
   function navigate(screenId) {
     if (screenId === 'screen-step3') showConfirmation();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
