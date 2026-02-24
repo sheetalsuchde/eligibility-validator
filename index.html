@@ -1068,7 +1068,7 @@
       margin: 24px auto 0;
       display: flex;
       flex-direction: column;
-      gap: 32px;
+      gap: 12px;
     }
     .confirm-section-title {
       font-size: 14px;
@@ -1108,14 +1108,22 @@
     }
     .helper-box {
       display: flex;
-      gap: 10px;
-      background: #FFFBEB;
-      border: 1px solid #F59E0B;
-      border-radius: var(--radius-md);
-      padding: 14px 16px;
-      font-size: 14px;
-      color: #92400E;
+      align-items: flex-start;
+      gap: 8px;
+      background: #EBF8FF;
+      border: 1px solid #AEE1FF;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 16px;
+      color: var(--text-primary);
       line-height: 1.5;
+    }
+    .helper-box strong {
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 20px;
+      display: block;
+      margin-bottom: 2px;
     }
 
     /* ───── SUCCESS SCREEN ───── */
@@ -2835,6 +2843,12 @@
     </div>
   </div>
 
+  <!-- Validator Overview heading -->
+  <div style="margin: 0 48px 16px;">
+    <h2 style="font-size:20px;font-weight:700;color:var(--text-primary);margin:0 0 4px;">Validator Overview</h2>
+    <p style="font-size:16px;font-weight:400;color:var(--text-subtle);margin:0;line-height:1.5;">View a summary of your validator settings and ensure everything looks correct.</p>
+  </div>
+
   <!-- Confirmation Card -->
   <div class="confirm-card">
     <div class="config-summary-panel">
@@ -2882,11 +2896,16 @@
         </div>
       </div>
     </div>
-    <div class="helper-box">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" flex-shrink="0" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      <div>
-        <strong>Activating this validator will replace the current active configuration.</strong><br/>
-        In-flight validations will complete under existing rules. New validations will use the updated eligibility settings starting <strong>March 01, 2026</strong>.
+
+    <!-- Info tile — 12px gap from summary -->
+    <div style="margin-top:-20px;">
+      <div class="helper-box">
+        <!-- Info icon filled 24px — blue -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#265DDC" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="12" x2="12" y2="16" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="white"/></svg>
+        <div>
+          <strong>Activating this validator will replace the current active configuration.</strong>
+          In-flight validations will complete under existing rules. New validations will use the updated eligibility settings starting <strong>March 01, 2026</strong>.
+        </div>
       </div>
     </div>
   </div>
