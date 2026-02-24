@@ -713,17 +713,21 @@
       gap: 10px;
     }
     .config-summary-title {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text-primary);
       line-height: 1.57;
+      margin-bottom: 4px;
     }
     .config-summary-row {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
     }
+    .config-summary-row:last-child { border-bottom: none; }
     .config-summary-key {
       font-size: 16px;
       font-weight: 500;
