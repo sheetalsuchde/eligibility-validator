@@ -2708,7 +2708,7 @@
           <div class="drc-file-size">2.15KB</div>
         </div>
       </div>
-      <button class="btn btn-outline drc-download-btn" onclick="alert('CSV download started!')">
+      <button class="btn btn-outline drc-download-btn" onclick="alert('CSV download started!'); enableSetValidator();">
         Download CSV
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       </button>
@@ -2758,7 +2758,7 @@
   <!-- Buttons: right-aligned, matching Review screen -->
   <div class="btn-group">
     <button class="btn btn-outline" onclick="navigate('screen-step2')">Back</button>
-    <button class="btn btn-primary" onclick="showConfirmation(); navigate('screen-step3');">
+    <button class="btn btn-primary" id="drc-set-validator-btn" disabled style="opacity:0.45; cursor:not-allowed;" onclick="showConfirmation(); navigate('screen-step3');">
       Set Validator
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
@@ -3693,6 +3693,15 @@
   /* ══════════════════════════════════════════════════
      STEP 3: CONFIRMATION
   ══════════════════════════════════════════════════ */
+  function enableSetValidator() {
+    const btn = document.getElementById('drc-set-validator-btn');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    }
+  }
+
   function showConfirmation() {
     document.getElementById('confirm-name').textContent =
       validatorName.trim() || '—';
