@@ -2714,41 +2714,44 @@
       </button>
     </div>
 
-    <!-- Configuration Summary panel — subtle border, key-value table -->
-    <div class="drc-summary-panel">
-      <div class="drc-summary-title">Configuration Summary</div>
-      <div class="drc-summary-inner">
+    <!-- Configuration Summary panel — matches Review & Dry Run In Progress layout -->
+    <div class="config-summary-panel">
+      <div class="config-summary-card">
+        <div class="config-summary-title">Configuration Summary</div>
 
-        <!-- Benefit / Product -->
-        <div class="drc-summary-row">
-          <span class="drc-summary-key">Benefit / Product</span>
-          <span class="drc-summary-value" id="drc-benefit-name">—</span>
+        <div class="config-summary-row">
+          <span class="config-summary-key">Benefit / Product</span>
+          <span class="config-summary-value" id="drc-benefit-name">—</span>
         </div>
 
-        <!-- Validator Name -->
-        <div class="drc-summary-row">
-          <span class="drc-summary-key">Validator Name</span>
-          <span class="drc-summary-value" id="drc-validator-name">—</span>
+        <div class="config-summary-row">
+          <span class="config-summary-key">Validator Name</span>
+          <span class="config-summary-value bold" id="drc-validator-name">—</span>
         </div>
 
-        <!-- Status -->
-        <div class="drc-summary-row">
-          <span class="drc-summary-key">Status</span>
-          <span class="drc-status-pill">
-            <span class="drc-status-dot"></span>
-            Dry Run Completed
+        <div class="config-summary-row">
+          <span class="config-summary-key" id="drc-rule-label">Rule</span>
+          <span class="config-summary-value bold" id="drc-rule-count">—</span>
+        </div>
+
+        <div class="config-summary-row">
+          <span class="config-summary-key">Status</span>
+          <span class="config-summary-value">
+            <span class="drc-status-pill">
+              <span class="drc-status-dot"></span>
+              Dry Run Completed
+            </span>
           </span>
         </div>
 
-        <!-- Date -->
-        <div class="drc-summary-row">
-          <span class="drc-summary-key">Date</span>
-          <span class="drc-summary-value" id="drc-completed-time">—</span>
+        <div class="config-summary-row">
+          <span class="config-summary-key">Date</span>
+          <span class="config-summary-value" id="drc-completed-time">—</span>
         </div>
-
-        <!-- Rule summary cards -->
-        <div id="drc-rules-list"></div>
       </div>
+
+      <!-- Rule summary cards -->
+      <div id="drc-rules-list" style="display:flex;flex-direction:column;gap:12px;"></div>
     </div>
   </div>
 
@@ -3660,6 +3663,11 @@
 
     const drcNameEl = document.getElementById('drc-validator-name');
     if (drcNameEl) drcNameEl.textContent = displayName;
+
+    const drcCountEl = document.getElementById('drc-rule-count');
+    if (drcCountEl) drcCountEl.textContent = rules.length;
+    const drcLabelEl = document.getElementById('drc-rule-label');
+    if (drcLabelEl) drcLabelEl.textContent = rules.length > 1 ? 'Rules' : 'Rule';
 
     const drcTimeEl = document.getElementById('drc-completed-time');
     if (drcTimeEl) drcTimeEl.textContent = timeStr;
