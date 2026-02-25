@@ -1506,7 +1506,8 @@
       height: 24px;
       border-radius: 4px;
     }
-    .ev-arrow-btn:hover { background: #f0f2f5; }
+    .ev-arrow-btn:hover:not(:disabled) { background: #f0f2f5; }
+    .ev-arrow-btn:disabled { opacity: 0.35; cursor: default; }
     /* Footer */
     .ev-footer {
       flex-shrink: 0;
@@ -3145,15 +3146,15 @@
         <div class="ev-pagination">
           <span class="ev-pagination-label">Rows per page:</span>
           <div class="ev-pagination-rows" style="display:flex;align-items:center;gap:2px;">
-            <span style="font-size:12px;color:var(--text-primary);">5</span>
+            <span id="ev-rows-per-page-label" style="font-size:12px;color:var(--text-primary);">5</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#2a2f3d"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <span class="ev-pagination-count">1–5 of 24</span>
+          <span id="ev-pagination-count" class="ev-pagination-count">1–5 of 5</span>
           <div class="ev-pagination-arrows">
-            <button class="ev-arrow-btn" title="Previous page">
+            <button id="ev-prev-btn" class="ev-arrow-btn" title="Previous page" onclick="evChangePage(-1)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button class="ev-arrow-btn" title="Next page">
+            <button id="ev-next-btn" class="ev-arrow-btn" title="Next page" onclick="evChangePage(1)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
@@ -4003,21 +4004,106 @@
 
   /* Live rows = VALIDATORS_DATA + optional freshEntry prepended */
   let _evRows = [];
+  let _evPage = 0;           // current 0-based page index
+  const _evRowsPerPage = 5;  // rows shown per page
 
-  function renderValidatorsTableFromRows(rows) {
+  /* Build one table row HTML — globalIdx is the index into _evRows */
+  function _buildEvRow(r, globalIdx) {
+    const isActive = r.validatorStatus === 'Active';
+    const dryKey = r.dryRunStatus.toLowerCase();
+    let dryClass = 'initiated';
+    if (dryKey.includes('progress')) dryClass = 'in-progress';
+    else if (dryKey.includes('complet')) dryClass = 'completed';
+    return `
+      <tr>
+        <td class="ev-col-gap">${r.date}</td>
+        <td class="ev-col-gap">${r.createdBy}</td>
+        <td class="ev-col-gap" style="min-width:175px">${r.name}</td>
+        <td class="ev-col-gap ev-col-benefit" style="min-width:268px;max-width:268px" title="${r.benefit}">${r.benefit}</td>
+        <td class="ev-col-gap">
+          <span class="ev-dry-run-badge ${dryClass}">${r.dryRunStatus}</span>
+        </td>
+        <td class="ev-col-gap">
+          <span class="ev-status-light${isActive ? ' active' : ''}">
+            <span class="ev-status-dot${isActive ? ' active' : ''}"></span>
+            ${r.validatorStatus}
+          </span>
+        </td>
+        <td>
+          <div class="ev-kebab-wrap" id="kebab-wrap-${globalIdx}">
+            <button class="ev-action-btn" onclick="toggleKebabMenu(event, ${globalIdx})" title="More actions">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div class="ev-kebab-menu" id="kebab-menu-${globalIdx}">
+              <div class="ev-kebab-item" onclick="openRulesModal(${globalIdx})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                See Rules
+              </div>
+              <div class="ev-kebab-divider"></div>
+              <div class="ev-kebab-item danger" onclick="removeValidator(${globalIdx})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                Remove Validator
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  /* Render the current page into the tbody and update pagination controls */
+  function renderEvTableBody() {
     const tbody = document.getElementById('ev-table-body');
     if (!tbody) return;
+
+    const total = _evRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / _evRowsPerPage));
+
+    /* Clamp current page in case rows were removed */
+    if (_evPage >= totalPages) _evPage = totalPages - 1;
+
+    const start = _evPage * _evRowsPerPage;
+    const end   = Math.min(start + _evRowsPerPage, total);
+    const pageRows = _evRows.slice(start, end);
+
+    tbody.innerHTML = pageRows.map((r, i) => _buildEvRow(r, start + i)).join('');
+
+    /* Update count label */
+    const countEl = document.getElementById('ev-pagination-count');
+    if (countEl) {
+      if (total === 0) {
+        countEl.textContent = '0 of 0';
+      } else {
+        countEl.textContent = `${start + 1}–${end} of ${total}`;
+      }
+    }
+
+    /* Update arrow button states */
+    const prevBtn = document.getElementById('ev-prev-btn');
+    const nextBtn = document.getElementById('ev-next-btn');
+    if (prevBtn) prevBtn.disabled = (_evPage === 0);
+    if (nextBtn) nextBtn.disabled = (_evPage >= totalPages - 1);
+  }
+
+  /* Change page by delta (+1 = next, -1 = prev) */
+  function evChangePage(delta) {
+    const total = _evRows.length;
+    const totalPages = Math.max(1, Math.ceil(total / _evRowsPerPage));
+    _evPage = Math.max(0, Math.min(_evPage + delta, totalPages - 1));
+    closeAllKebabMenus();
+    renderEvTableBody();
+  }
+
+  function renderValidatorsTableFromRows(rows) {
     _evRows = rows;
-    renderEvTableBody(tbody);
+    _evPage = 0;
+    renderEvTableBody();
   }
 
   function renderValidatorsTable() {
-    const tbody = document.getElementById('ev-table-body');
-    if (!tbody) return;
-
     /* If activate() already built _evRows, use it directly */
     if (_evRows.length > 0) {
-      renderEvTableBody(tbody);
+      _evPage = 0;
+      renderEvTableBody();
       return;
     }
 
@@ -4030,61 +4116,14 @@
       benefit: selectedBenefit || '—',
       dryRunStatus: 'Dry Run Completed',
       validatorStatus: 'Active',
-      /* pull live rules from the rule builder */
       rules: rules.length
         ? rules.map((rule, idx) => `Rule ${idx + 1}: ${buildRuleSummary(rule)}`)
         : [],
     } : null;
 
     _evRows = freshEntry ? [freshEntry, ...VALIDATORS_DATA] : [...VALIDATORS_DATA];
-    renderEvTableBody(tbody);
-  }
-
-  function renderEvTableBody(tbody) {
-    tbody.innerHTML = _evRows.map((r, idx) => {
-      const isActive = r.validatorStatus === 'Active';
-
-      /* Dry Run badge colour class */
-      const dryKey = r.dryRunStatus.toLowerCase();
-      let dryClass = 'initiated';
-      if (dryKey.includes('progress')) dryClass = 'in-progress';
-      else if (dryKey.includes('complet')) dryClass = 'completed';
-
-      return `
-        <tr>
-          <td class="ev-col-gap">${r.date}</td>
-          <td class="ev-col-gap">${r.createdBy}</td>
-          <td class="ev-col-gap" style="min-width:175px">${r.name}</td>
-          <td class="ev-col-gap ev-col-benefit" style="min-width:268px;max-width:268px" title="${r.benefit}">${r.benefit}</td>
-          <td class="ev-col-gap">
-            <span class="ev-dry-run-badge ${dryClass}">${r.dryRunStatus}</span>
-          </td>
-          <td class="ev-col-gap">
-            <span class="ev-status-light${isActive ? ' active' : ''}">
-              <span class="ev-status-dot${isActive ? ' active' : ''}"></span>
-              ${r.validatorStatus}
-            </span>
-          </td>
-          <td>
-            <div class="ev-kebab-wrap" id="kebab-wrap-${idx}">
-              <button class="ev-action-btn" onclick="toggleKebabMenu(event, ${idx})" title="More actions">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-              </button>
-              <div class="ev-kebab-menu" id="kebab-menu-${idx}">
-                <div class="ev-kebab-item" onclick="openRulesModal(${idx})">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                  See Rules
-                </div>
-                <div class="ev-kebab-divider"></div>
-                <div class="ev-kebab-item danger" onclick="removeValidator(${idx})">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                  Remove Validator
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>`;
-    }).join('');
+    _evPage = 0;
+    renderEvTableBody();
   }
 
   function showValidatorsList() {
@@ -4113,52 +4152,7 @@
   function removeValidator(idx) {
     closeAllKebabMenus();
     _evRows.splice(idx, 1);
-    /* Re-render without a fresh entry rebuild */
-    const tbody = document.getElementById('ev-table-body');
-    if (!tbody) return;
-    /* Re-render by calling full render but syncing _evRows first */
-    const saved = _evRows.slice();
-    /* Temporarily override to avoid freshEntry being re-prepended */
-    _evRows = saved;
-    tbody.innerHTML = saved.map((r, i) => {
-      const isActive = r.validatorStatus === 'Active';
-      const dryKey = r.dryRunStatus.toLowerCase();
-      let dryClass = 'initiated';
-      if (dryKey.includes('progress')) dryClass = 'in-progress';
-      else if (dryKey.includes('complet')) dryClass = 'completed';
-      return `
-        <tr>
-          <td class="ev-col-gap">${r.date}</td>
-          <td class="ev-col-gap">${r.createdBy}</td>
-          <td class="ev-col-gap" style="min-width:175px">${r.name}</td>
-          <td class="ev-col-gap ev-col-benefit" style="min-width:268px;max-width:268px" title="${r.benefit}">${r.benefit}</td>
-          <td class="ev-col-gap"><span class="ev-dry-run-badge ${dryClass}">${r.dryRunStatus}</span></td>
-          <td class="ev-col-gap">
-            <span class="ev-status-light${isActive ? ' active' : ''}">
-              <span class="ev-status-dot${isActive ? ' active' : ''}"></span>
-              ${r.validatorStatus}
-            </span>
-          </td>
-          <td>
-            <div class="ev-kebab-wrap" id="kebab-wrap-${i}">
-              <button class="ev-action-btn" onclick="toggleKebabMenu(event, ${i})" title="More actions">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
-              </button>
-              <div class="ev-kebab-menu" id="kebab-menu-${i}">
-                <div class="ev-kebab-item" onclick="openRulesModal(${i})">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                  See Rules
-                </div>
-                <div class="ev-kebab-divider"></div>
-                <div class="ev-kebab-item danger" onclick="removeValidator(${i})">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                  Remove Validator
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>`;
-    }).join('');
+    renderEvTableBody();
   }
 
   /* ── Rules modal ── */
