@@ -3622,8 +3622,12 @@
       const isLast = idx === rule.conditions.length - 1;
       const canDelete = rule.conditions.length > 1;
 
-      // Variable selector — all variables always available (duplicates allowed)
+      // Variable selector — exclude variables already used by other conditions in this rule
+      const usedByOthers = rule.conditions
+        .filter(c => c.cid !== cond.cid)
+        .map(c => c.varName);
       const varOpts = ALL_VARIABLE_NAMES
+        .filter(v => !usedByOthers.includes(v) || v === cond.varName)
         .map(v => `<option value="${v}" ${cond.varName === v ? 'selected' : ''}>${v}</option>`)
         .join('');
 
@@ -3663,14 +3667,18 @@
       }
     });
 
-    // "+ Add condition" — always shown so users can add duplicate variables
-    html += `
-      <button class="add-condition-btn" onclick="addConditionToRule(${ruleId})">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Add condition
-      </button>`;
+    // "+ Add condition" — only shown if there are still unused variables available
+    const usedVars = rule.conditions.map(c => c.varName);
+    const hasMore  = ALL_VARIABLE_NAMES.some(v => !usedVars.includes(v));
+    if (hasMore) {
+      html += `
+        <button class="add-condition-btn" onclick="addConditionToRule(${ruleId})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add condition
+        </button>`;
+    }
 
     return html;
   }
