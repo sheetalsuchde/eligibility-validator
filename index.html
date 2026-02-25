@@ -3309,10 +3309,19 @@
       },
     },
     'Benefit duration cap': {
-      type: 'select',
-      placeholder: 'Select duration cap',
-      options: ['6 months', '12 months', '24 months', 'Unlimited'],
-      summary: (r) => `Benefit duration capped at "${r.conditionValue || 'any'}"`,
+      type: 'compound',
+      operatorLabel: 'Condition',
+      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)'],
+      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤' },
+      numberLabel: 'Number',
+      durationLabel: 'Duration',
+      durations: ['Days', 'Weeks', 'Months', 'Years'],
+      summary: (r) => {
+        const op  = r.operator ? (r.operator.startsWith('≥') ? 'more than or equal to' : 'less than or equal to') : '—';
+        const num = r.number   || '0';
+        const dur = r.duration || 'Days';
+        return `Benefit duration capped at ${op} ${num} ${dur}`;
+      },
     },
     'Lifetime payout cap': {
       type: 'select',
