@@ -3298,30 +3298,40 @@
     'Hire date': {
       type: 'compound',
       operatorLabel: 'Condition',
-      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)'],
-      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤' },
+      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)', 'In between'],
+      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤', 'In between': '↔' },
       numberLabel: 'Number',
       durationLabel: 'Duration',
       durations: ['Days', 'Weeks', 'Months', 'Years'],
       summary: (r) => {
-        const op  = r.operator  ? (r.operator.startsWith('≥') ? 'at least' : 'at most') : '—';
-        const num = r.number    || '0';
-        const dur = r.duration  || 'Days';
+        const dur = r.duration || 'Days';
+        if (r.operator === 'In between') {
+          const n1 = r.number  || '0';
+          const n2 = r.number2 || '0';
+          return `Employees hired between ${n1} and ${n2} ${dur} ago`;
+        }
+        const op  = r.operator ? (r.operator.startsWith('≥') ? 'at least' : 'at most') : '—';
+        const num = r.number   || '0';
         return `Employees hired ${op} ${num} ${dur} ago`;
       },
     },
     'Benefit duration cap': {
       type: 'compound',
       operatorLabel: 'Condition',
-      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)'],
-      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤' },
+      operators: ['≥ (More than or equal to)', '≤ (Less than or equal to)', 'In between'],
+      operatorShort: { '≥ (More than or equal to)': '≥', '≤ (Less than or equal to)': '≤', 'In between': '↔' },
       numberLabel: 'Number',
       durationLabel: 'Duration',
       durations: ['Days', 'Weeks', 'Months', 'Years'],
       summary: (r) => {
+        const dur = r.duration || 'Days';
+        if (r.operator === 'In between') {
+          const n1 = r.number  || '0';
+          const n2 = r.number2 || '0';
+          return `Benefit duration capped between ${n1} and ${n2} ${dur}`;
+        }
         const op  = r.operator ? (r.operator.startsWith('≥') ? 'more than or equal to' : 'less than or equal to') : '—';
         const num = r.number   || '0';
-        const dur = r.duration || 'Days';
         return `Benefit duration capped at ${op} ${num} ${dur}`;
       },
     },
@@ -3433,7 +3443,7 @@
   let nextCondId = 1; // separate id counter for conditions
 
   function blankCondition(varName) {
-    return { cid: nextCondId++, varName: varName || '', conditionValue: '', operator: '', number: '', duration: '' };
+    return { cid: nextCondId++, varName: varName || '', conditionValue: '', operator: '', number: '', number2: '', duration: '' };
   }
 
   function blankRule(varName) {
@@ -3506,11 +3516,20 @@
   }
   function updateConditionOperator(ruleId, cid, value) {
     const cond = getCondition(ruleId, cid);
-    if (cond) { cond.operator = value; refreshRuleSummaryById(ruleId); }
+    if (!cond) return;
+    const prev = cond.operator;
+    cond.operator = value;
+    // If toggling in/out of "In between", re-render to show/hide second number input
+    const needsRerender = (value === 'In between') !== (prev === 'In between');
+    if (needsRerender) { renderRules(); } else { refreshRuleSummaryById(ruleId); }
   }
   function updateConditionNumber(ruleId, cid, value) {
     const cond = getCondition(ruleId, cid);
     if (cond) { cond.number = value; refreshRuleSummaryById(ruleId); }
+  }
+  function updateConditionNumber2(ruleId, cid, value) {
+    const cond = getCondition(ruleId, cid);
+    if (cond) { cond.number2 = value; refreshRuleSummaryById(ruleId); }
   }
   function updateConditionDuration(ruleId, cid, value) {
     const cond = getCondition(ruleId, cid);
@@ -3579,6 +3598,7 @@
     }
 
     if (cfg.type === 'compound') {
+      const isInBetween = cond.operator === 'In between';
       const opOpts = ['', ...cfg.operators]
         .map(o => o === ''
           ? `<option value="" disabled ${!cond.operator ? 'selected' : ''}>Choose condition</option>`
@@ -3592,6 +3612,13 @@
           </select>
           <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>` : '';
+      const number2Field = isInBetween ? `
+        <div class="rule-number-wrap">
+          <span class="rule-select-label">And</span>
+          <input type="number" class="rule-number-input" min="0" placeholder="0"
+            value="${cond.number2 || ''}"
+            oninput="updateConditionNumber2(${ruleId},${cid},this.value)" />
+        </div>` : '';
       return `
         <div class="rule-compound-row">
           <div class="rule-select-wrap" style="flex:1">
@@ -3602,11 +3629,12 @@
             <svg class="rule-select-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
           <div class="rule-number-wrap">
-            <span class="rule-select-label">${cfg.numberLabel}</span>
+            <span class="rule-select-label">${isInBetween ? 'From' : cfg.numberLabel}</span>
             <input type="number" class="rule-number-input" min="0" placeholder="0"
               value="${cond.number || ''}"
               oninput="updateConditionNumber(${ruleId},${cid},this.value)" />
           </div>
+          ${number2Field}
           ${durField}
         </div>`;
     }
