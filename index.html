@@ -3997,18 +3997,16 @@
         ? rules.map((rule, idx) => `Rule ${idx + 1}: ${buildRuleSummary(rule)}`)
         : [],
     };
-    /* Demote any existing Active validator for the same benefit to Draft */
-    const updatedData = VALIDATORS_DATA.map(v => {
-      if (
-        v.validatorStatus === 'Active' &&
-        v.benefit.toLowerCase() === (selectedBenefit || '').toLowerCase()
-      ) {
+    /* Demote ALL existing Active validators to Draft when a new one is activated */
+    const baseRows = _evRows.length > 0 ? _evRows : VALIDATORS_DATA;
+    const updatedData = baseRows.map(v => {
+      if (v.validatorStatus === 'Active') {
         return { ...v, validatorStatus: 'Draft' };
       }
       return v;
     });
 
-    /* Prepend new entry; existing same-benefit validators are now Draft */
+    /* Prepend new Active entry; all previous Active validators are now Draft */
     _evRows = [newEntry, ...updatedData];
 
     navigate('screen-success');
