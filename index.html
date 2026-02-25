@@ -3036,7 +3036,7 @@
 
         <div class="config-summary-row">
           <span class="config-summary-key">Eligibility Variables</span>
-          <span class="config-summary-value" id="confirm-vars">Employment Type, Hire date</span>
+          <span class="config-summary-value" id="confirm-vars">—</span>
         </div>
 
         <div class="config-summary-row">
@@ -3957,6 +3957,18 @@
     document.getElementById('confirm-rule-count').textContent = ruleCount;
     const confirmLabel = document.getElementById('confirm-rule-label');
     if (confirmLabel) confirmLabel.textContent = ruleCount > 1 ? 'Rules' : 'Rule';
+
+    /* Collect unique eligibility variables used across all rule conditions */
+    const usedVars = [];
+    rules.forEach(rule => {
+      (rule.conditions || []).forEach(cond => {
+        if (cond.varName && !usedVars.includes(cond.varName)) {
+          usedVars.push(cond.varName);
+        }
+      });
+    });
+    const varsEl = document.getElementById('confirm-vars');
+    if (varsEl) varsEl.textContent = usedVars.length ? usedVars.join(', ') : '—';
   }
 
   /* ══════════════════════════════════════════════════
